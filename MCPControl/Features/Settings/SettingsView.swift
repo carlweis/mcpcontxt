@@ -24,6 +24,11 @@ struct SettingsView: View {
                 .tabItem {
                     Label("Advanced", systemImage: "wrench.and.screwdriver")
                 }
+
+            AboutSettingsView()
+                .tabItem {
+                    Label("About", systemImage: "info.circle")
+                }
         }
         .frame(width: 550, height: 400)
     }

@@ -10,7 +10,8 @@ import AppKit
 
 struct ServerDetailView: View {
     @Environment(\.dismiss) private var environmentDismiss
-    @EnvironmentObject var registry: ServerRegistry
+    @ObservedObject private var registry = ServerRegistry.shared
+    @ObservedObject private var statusChecker = MCPStatusChecker.shared
 
     let server: MCPServer
     let onDismiss: (() -> Void)?
@@ -38,6 +39,7 @@ struct ServerDetailView: View {
             // Details
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    statusSection
                     configurationSection
                     authSection
                 }
@@ -53,7 +55,15 @@ struct ServerDetailView: View {
     }
 
     private var header: some View {
-        HStack {
+        HStack(spacing: 12) {
+            // Server icon
+            ServerIconView(
+                serverId: server.name,
+                serverURL: server.configuration.url,
+                serverType: server.type,
+                size: 48
+            )
+
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
                     Text(server.name)
@@ -80,6 +90,84 @@ struct ServerDetailView: View {
             .keyboardShortcut(.escape, modifiers: [])
         }
         .padding()
+    }
+
+    private var statusSection: some View {
+        let status = statusChecker.status(for: server.name)
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Connection Status")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 12) {
+                // Status icon
+                Group {
+                    switch status {
+                    case .connected:
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                    case .needsAuth:
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                    case .failed:
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                    case .unknown:
+                        Image(systemName: "questionmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                }
+                .font(.title2)
+
+                // Status text and action
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(statusTitle(for: status))
+                        .font(.headline)
+
+                    Text(statusDescription(for: status))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+            }
+            .padding()
+            .background(statusBackgroundColor(for: status))
+            .cornerRadius(8)
+        }
+    }
+
+    private func statusTitle(for status: MCPConnectionStatus) -> String {
+        switch status {
+        case .connected: return "Connected"
+        case .needsAuth: return "Needs Authentication"
+        case .failed: return "Connection Failed"
+        case .unknown: return "Status Unknown"
+        }
+    }
+
+    private func statusDescription(for status: MCPConnectionStatus) -> String {
+        switch status {
+        case .connected:
+            return "This server is connected and ready to use in Claude Code."
+        case .needsAuth:
+            return "Open Claude Code and use this server to complete authentication."
+        case .failed:
+            return "Unable to connect. The server may be down or there may be a network issue."
+        case .unknown:
+            return "Click refresh to check the connection status."
+        }
+    }
+
+    private func statusBackgroundColor(for status: MCPConnectionStatus) -> Color {
+        switch status {
+        case .connected: return Color.green.opacity(0.1)
+        case .needsAuth: return Color.orange.opacity(0.1)
+        case .failed: return Color.red.opacity(0.1)
+        case .unknown: return Color.secondary.opacity(0.1)
+        }
     }
 
     private var configurationSection: some View {
@@ -187,28 +275,21 @@ struct ServerDetailView: View {
             }
 
             Spacer()
-
-            Button {
-                copyConfigHint()
-            } label: {
-                Label("Copy Server Name", systemImage: "doc.on.doc")
-            }
-            .buttonStyle(.borderedProminent)
         }
         .padding()
     }
 
-    private func copyConfigHint() {
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(server.name, forType: .string)
-    }
-
     private func removeServer() {
+        print("[ServerDetailView] Removing server: \(server.name)")
         Task {
-            try? await registry.remove(server)
-            await MainActor.run {
-                dismiss()
+            do {
+                try await registry.remove(server)
+                print("[ServerDetailView] Server removed successfully")
+                await MainActor.run {
+                    dismiss()
+                }
+            } catch {
+                print("[ServerDetailView] Failed to remove server: \(error)")
             }
         }
     }
@@ -217,11 +298,10 @@ struct ServerDetailView: View {
 #Preview {
     ServerDetailView(
         server: MCPServer(
-            name: "github",
+            name: "linear",
             type: .http,
-            configuration: .http(url: "https://api.githubcopilot.com/mcp/")
+            configuration: .http(url: "https://mcp.linear.app/mcp")
         ),
         onDismiss: nil
     )
-    .environmentObject(ServerRegistry.shared)
 }

@@ -18,9 +18,7 @@ struct MCPControlApp: App {
             PopoverView()
                 .environmentObject(registry)
         } label: {
-            Image(systemName: "circle.fill")
-                .symbolRenderingMode(.palette)
-                .foregroundStyle(menuBarIconColor)
+            MenuBarIconM()
         }
         .menuBarExtraStyle(.window)
 

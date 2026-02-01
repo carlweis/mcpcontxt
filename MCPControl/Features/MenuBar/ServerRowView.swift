@@ -11,8 +11,8 @@ import AppKit
 struct ServerRowView: View {
     let server: MCPServer
     let onTap: () -> Void
-    let onRemove: () -> Void
 
+    @ObservedObject private var statusChecker = MCPStatusChecker.shared
     @State private var isHovering = false
 
     var body: some View {
@@ -51,18 +51,8 @@ struct ServerRowView: View {
 
                 Spacer()
 
-                // Remove button (shown on hover)
-                if isHovering {
-                    Button(action: onRemove) {
-                        Image(systemName: "trash")
-                            .font(.caption)
-                            .foregroundColor(.red)
-                            .frame(width: 24, height: 24)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .help("Remove server")
-                }
+                // Connection status indicator (right side)
+                statusIndicator
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -71,9 +61,7 @@ struct ServerRowView: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.15)) {
-                isHovering = hovering
-            }
+            isHovering = hovering
         }
     }
 
@@ -86,6 +74,31 @@ struct ServerRowView: View {
             .background(Color.secondary.opacity(0.2))
             .cornerRadius(4)
     }
+
+    @ViewBuilder
+    private var statusIndicator: some View {
+        let status = statusChecker.status(for: server.name)
+        switch status {
+        case .connected:
+            Image(systemName: "checkmark.circle.fill")
+                .font(.caption2)
+                .foregroundColor(.green)
+                .help("Connected")
+        case .needsAuth:
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.caption2)
+                .foregroundColor(.orange)
+                .help("Needs authentication - use in Claude Code to connect")
+        case .failed:
+            Image(systemName: "xmark.circle.fill")
+                .font(.caption2)
+                .foregroundColor(.red)
+                .help("Connection failed")
+        case .unknown:
+            Color.clear
+                .frame(width: 12, height: 12)
+        }
+    }
 }
 
 #Preview {
@@ -96,8 +109,7 @@ struct ServerRowView: View {
                 type: .http,
                 configuration: .http(url: "https://api.githubcopilot.com/mcp/")
             ),
-            onTap: {},
-            onRemove: {}
+            onTap: {}
         )
 
         ServerRowView(
@@ -106,8 +118,7 @@ struct ServerRowView: View {
                 type: .http,
                 configuration: .http(url: "https://mcp.slack.com/mcp")
             ),
-            onTap: {},
-            onRemove: {}
+            onTap: {}
         )
 
         ServerRowView(
@@ -116,8 +127,7 @@ struct ServerRowView: View {
                 type: .stdio,
                 configuration: .stdio(command: "npx", args: ["-y", "@modelcontextprotocol/server-github"])
             ),
-            onTap: {},
-            onRemove: {}
+            onTap: {}
         )
     }
     .frame(width: 320)

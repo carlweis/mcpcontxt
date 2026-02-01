@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var importWindow: NSWindow?
     private var serverDetailWindow: NSWindow?
     private var browseWindow: NSWindow?
+    private var stdioConfigWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Set up as menu bar app (no dock icon by default)
@@ -54,6 +55,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self,
             selector: #selector(handleOpenServerDetail(_:)),
             name: .openServerDetail,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleOpenStdioServerConfig(_:)),
+            name: .openStdioServerConfig,
             object: nil
         )
     }
@@ -177,6 +184,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         browseWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc private func handleOpenStdioServerConfig(_ notification: Notification) {
+        guard let catalogServer = notification.object as? MCPCatalogServer else { return }
+        openStdioServerConfig(catalogServer)
+    }
+
+    func openStdioServerConfig(_ catalogServer: MCPCatalogServer) {
+        let configView = AddStdioServerView(catalogServer: catalogServer, onDismiss: { [weak self] in
+            self?.stdioConfigWindow?.close()
+        })
+        .environmentObject(ServerRegistry.shared)
+
+        if stdioConfigWindow == nil {
+            stdioConfigWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 500, height: 450),
+                styleMask: [.titled, .closable],
+                backing: .buffered,
+                defer: false
+            )
+            stdioConfigWindow?.isReleasedWhenClosed = false
+        }
+
+        stdioConfigWindow?.title = "Configure \(catalogServer.name)"
+        stdioConfigWindow?.contentView = NSHostingView(rootView: configView)
+        stdioConfigWindow?.center()
+        stdioConfigWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 }

@@ -14,11 +14,11 @@ struct ServerIconView: View {
     var size: CGFloat = 32
 
     @ObservedObject private var faviconService = FaviconService.shared
+    @State private var currentIcon: NSImage?
 
     var body: some View {
         Group {
-            if let url = serverURL,
-               let favicon = faviconService.icon(for: url, serverId: serverId) {
+            if let favicon = currentIcon {
                 Image(nsImage: favicon)
                     .resizable()
                     .interpolation(.high)
@@ -29,6 +29,25 @@ struct ServerIconView: View {
             }
         }
         .frame(width: size, height: size)
+        .onAppear {
+            loadIcon()
+        }
+        .onChange(of: faviconService.icons[serverId]) { newIcon in
+            currentIcon = newIcon
+        }
+    }
+
+    private func loadIcon() {
+        guard let url = serverURL else { return }
+        // Check if already cached
+        if let cached = faviconService.icons[serverId] {
+            currentIcon = cached
+        } else {
+            // Trigger fetch (will update via onChange)
+            Task {
+                _ = faviconService.icon(for: url, serverId: serverId)
+            }
+        }
     }
 
     private var fallbackView: some View {
@@ -59,7 +78,14 @@ extension ServerIconView {
     init(catalogServer: MCPCatalogServer, size: CGFloat = 32) {
         self.serverId = catalogServer.id
         self.serverURL = catalogServer.url
-        self.serverType = catalogServer.transport == .sse ? .sse : .http
+        switch catalogServer.transport {
+        case .sse:
+            self.serverType = .sse
+        case .stdio:
+            self.serverType = .stdio
+        case .http:
+            self.serverType = .http
+        }
         self.size = size
     }
 }

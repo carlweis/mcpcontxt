@@ -16,6 +16,7 @@ extension Notification.Name {
     static let openImport = Notification.Name("openImport")
     static let openBrowse = Notification.Name("openBrowse")
     static let openServerDetail = Notification.Name("openServerDetail")
+    static let openStdioServerConfig = Notification.Name("openStdioServerConfig")
 }
 
 class NotificationService {

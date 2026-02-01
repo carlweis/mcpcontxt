@@ -106,9 +106,12 @@ class ClaudeConfigService {
     }
 
     func removeServer(name: String) throws {
+        print("[ClaudeConfigService] Removing server: \(name)")
         var servers = readServers()
-        servers.removeValue(forKey: name)
+        let removed = servers.removeValue(forKey: name)
+        print("[ClaudeConfigService] Server was present: \(removed != nil), remaining: \(servers.count)")
         try writeServers(servers)
+        print("[ClaudeConfigService] Server removed and config saved")
     }
 
     func writeServers(_ servers: [String: MCPServerConfig]) throws {

@@ -10,6 +10,7 @@ import AppKit
 
 struct PopoverView: View {
     @EnvironmentObject var registry: ServerRegistry
+    @ObservedObject private var statusChecker = MCPStatusChecker.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -36,6 +37,7 @@ struct PopoverView: View {
             print("[PopoverView] onAppear - loading servers")
             Task {
                 await registry.loadFromClaudeConfig()
+                await statusChecker.refresh()
                 print("[PopoverView] onAppear load complete, showing \(registry.servers.count) servers")
             }
         }
@@ -48,7 +50,7 @@ struct PopoverView: View {
 
             Spacer()
 
-            if registry.isLoading {
+            if registry.isLoading || statusChecker.isChecking {
                 ProgressView()
                     .scaleEffect(0.6)
                     .frame(width: 16, height: 16)
@@ -58,7 +60,7 @@ struct PopoverView: View {
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("Refresh from ~/.claude.json")
+                .help("Refresh servers and check status")
             }
 
             Button(action: openSettings) {
@@ -80,6 +82,7 @@ struct PopoverView: View {
         print("[PopoverView] Refresh button tapped")
         Task {
             await registry.loadFromClaudeConfig()
+            await statusChecker.refresh()
             print("[PopoverView] Refresh complete, now showing \(registry.servers.count) servers")
         }
     }
@@ -90,8 +93,7 @@ struct PopoverView: View {
                 ForEach(registry.servers) { server in
                     ServerRowView(
                         server: server,
-                        onTap: { openServerDetail(server) },
-                        onRemove: { removeServer(server) }
+                        onTap: { openServerDetail(server) }
                     )
                 }
             }
@@ -102,12 +104,6 @@ struct PopoverView: View {
 
     private func openServerDetail(_ server: MCPServer) {
         NotificationCenter.default.post(name: .openServerDetail, object: server)
-    }
-
-    private func removeServer(_ server: MCPServer) {
-        Task {
-            try? await registry.remove(server)
-        }
     }
 
     private var emptyState: some View {
