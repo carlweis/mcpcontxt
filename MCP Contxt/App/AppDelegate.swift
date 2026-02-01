@@ -14,18 +14,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var addServerWindow: NSWindow?
     private var importWindow: NSWindow?
     private var serverDetailWindow: NSWindow?
+    private var browseWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Set up as menu bar app (no dock icon by default)
         NSApp.setActivationPolicy(.accessory)
 
-        // Initialize services
+        // Load servers from ~/.claude.json
         Task { @MainActor in
-            await initializeServices()
+            await ServerRegistry.shared.loadFromClaudeConfig()
         }
-
-        // Setup notifications
-        setupNotifications()
 
         // Watch for window open requests
         NotificationCenter.default.addObserver(
@@ -60,84 +58,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
-        HealthMonitor.shared.stopMonitoring()
-        ConfigurationFileWatcher.shared.stopWatching()
-    }
-
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         // Don't quit when windows close - we're a menu bar app
         return false
-    }
-
-    private func initializeServices() async {
-        // Load server registry
-        await ServerRegistry.shared.load()
-
-        // Start health monitoring
-        let interval = UserDefaults.standard.double(forKey: "healthCheckInterval")
-        HealthMonitor.shared.startMonitoring(interval: interval > 0 ? interval : 30)
-
-        // Start file watching
-        ConfigurationFileWatcher.shared.startWatching {
-            // Handle external config changes
-            Task { @MainActor in
-                // Could show a notification or badge indicating external changes
-            }
-        }
-
-        // Auto-sync on launch if enabled
-        if UserDefaults.standard.bool(forKey: "autoSyncOnChanges") {
-            SyncService.shared.setAutoSync(enabled: true)
-        }
-
-        // First launch: Discover and import existing servers
-        if !UserDefaults.standard.bool(forKey: "hasCompletedFirstLaunch") {
-            await performFirstLaunchSetup()
-        }
-    }
-
-    private func performFirstLaunchSetup() async {
-        do {
-            let result = try await ConfigurationManager.shared.discoverExistingServers()
-
-            if result.hasServers {
-                // Import all discovered servers
-                try await ConfigurationManager.shared.importDiscoveredServers(result.mergedServers)
-            }
-
-            UserDefaults.standard.set(true, forKey: "hasCompletedFirstLaunch")
-        } catch {
-            // Handle silently on first launch
-        }
-    }
-
-    private func setupNotifications() {
-        // Request notification permission
-        Task {
-            _ = await NotificationService.shared.requestAuthorization()
-        }
-
-        // Setup notification categories
-        NotificationService.shared.setupNotificationCategories()
-
-        // Set notification delegate
-        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
-
-        // Handle notification actions
-        NotificationDelegate.shared.onRestartServer = { serverName in
-            Task {
-                _ = await ProcessMonitor.shared.restartClaudeDesktop()
-            }
-        }
-
-        NotificationDelegate.shared.onViewDetails = { serverName in
-            // With MenuBarExtra, we can't programmatically open the popover
-            // Instead, activate the app so the user can click the menu bar icon
-            Task { @MainActor in
-                NSApp.activate(ignoringOtherApps: true)
-            }
-        }
     }
 
     @objc private func openSettings() {
@@ -233,8 +156,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         serverDetailWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
-
-    private var browseWindow: NSWindow?
 
     @objc func openBrowse() {
         if browseWindow == nil {

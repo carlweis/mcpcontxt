@@ -57,7 +57,7 @@ struct ServerListView: View {
             }
         } message: {
             if let server = serverToDelete {
-                Text("Are you sure you want to delete '\(server.name)'? This will also remove it from synced configurations.")
+                Text("Are you sure you want to delete '\(server.name)'? This will remove it from ~/.claude.json.")
             }
         }
     }
@@ -99,21 +99,6 @@ struct ServerListView: View {
 
     private var serverTable: some View {
         Table(filteredServers, selection: $selectedServerID) {
-            TableColumn("Status") { server in
-                HStack(spacing: 6) {
-                    Image(systemName: server.metadata.healthStatus.systemImage)
-                        .foregroundColor(server.metadata.healthStatus.color)
-
-                    if server.source == .enterprise {
-                        Image(systemName: "lock.fill")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .frame(width: 40)
-            }
-            .width(50)
-
             TableColumn("Name") { server in
                 Text(server.name)
                     .font(.system(.body, design: .monospaced))
@@ -130,54 +115,45 @@ struct ServerListView: View {
             }
             .width(60)
 
-            TableColumn("Sync Targets") { server in
-                HStack(spacing: 4) {
-                    ForEach(Array(server.syncTargets), id: \.self) { target in
-                        Text(target == .claudeDesktop ? "Desktop" : "CLI")
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.accentColor.opacity(0.2))
-                            .cornerRadius(4)
-                    }
+            TableColumn("URL/Command") { server in
+                if let url = server.configuration.url {
+                    Text(url)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                } else if let command = server.configuration.command {
+                    Text(command)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
             }
-            .width(min: 100, ideal: 140)
-
-            TableColumn("Source") { server in
-                Text(server.source.displayName)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .width(80)
+            .width(min: 150, ideal: 250)
 
             TableColumn("Actions") { server in
                 HStack(spacing: 8) {
-                    if server.source.isEditable {
-                        Button(action: { serverToEdit = server }) {
-                            Image(systemName: "pencil")
-                        }
-                        .buttonStyle(.plain)
-                        .help("Edit")
-
-                        Button(action: {
-                            serverToDelete = server
-                            showingDeleteConfirmation = true
-                        }) {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                        }
-                        .buttonStyle(.plain)
-                        .help("Delete")
+                    Button(action: { serverToEdit = server }) {
+                        Image(systemName: "pencil")
                     }
+                    .buttonStyle(.plain)
+                    .help("Edit")
+
+                    Button(action: {
+                        serverToDelete = server
+                        showingDeleteConfirmation = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Delete")
                 }
             }
             .width(70)
         }
         .contextMenu(forSelectionType: UUID.self) { selection in
             if let serverID = selection.first,
-               let server = registry.server(withID: serverID),
-               server.source.isEditable {
+               let server = registry.server(withID: serverID) {
                 Button("Edit") {
                     serverToEdit = server
                 }
@@ -188,8 +164,7 @@ struct ServerListView: View {
             }
         } primaryAction: { selection in
             if let serverID = selection.first,
-               let server = registry.server(withID: serverID),
-               server.source.isEditable {
+               let server = registry.server(withID: serverID) {
                 serverToEdit = server
             }
         }
@@ -197,7 +172,7 @@ struct ServerListView: View {
 
     private func deleteServer(_ server: MCPServer) {
         Task {
-            try? await SyncService.shared.removeAndSync(server)
+            try? await registry.remove(server)
         }
     }
 }

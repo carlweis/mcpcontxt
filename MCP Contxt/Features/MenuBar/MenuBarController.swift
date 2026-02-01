@@ -53,7 +53,7 @@ class MenuBarController: NSObject, ObservableObject {
             self?.closePopover()
         }
 
-        // Observe health status changes
+        // Observe server changes
         registry.$servers
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -107,7 +107,7 @@ class MenuBarController: NSObject, ObservableObject {
 
         menu.addItem(NSMenuItem(title: "Open MCP Contxt", action: #selector(showPopoverFromMenu), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Sync All", action: #selector(syncAll), keyEquivalent: "s"))
+        menu.addItem(NSMenuItem(title: "Refresh", action: #selector(refreshServers), keyEquivalent: "r"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
@@ -126,9 +126,9 @@ class MenuBarController: NSObject, ObservableObject {
         showPopover()
     }
 
-    @objc private func syncAll() {
-        Task {
-            try? await SyncService.shared.sync()
+    @objc private func refreshServers() {
+        Task { @MainActor in
+            await registry.loadFromClaudeConfig()
         }
     }
 
@@ -144,43 +144,21 @@ class MenuBarController: NSObject, ObservableObject {
     private func updateStatusIcon() {
         guard let button = statusItem?.button else { return }
 
-        let status = registry.overallHealthStatus
+        let hasServers = !registry.servers.isEmpty
 
         // Use SF Symbols for the menu bar icon
-        let imageName: String
-        let tintColor: NSColor
+        let imageName = hasServers ? "circle.fill" : "circle"
+        let tintColor: NSColor = hasServers ? .systemGreen : .secondaryLabelColor
 
-        switch status {
-        case .healthy:
-            imageName = "circle.fill"
-            tintColor = .systemGreen
-        case .degraded:
-            imageName = "circle.fill"
-            tintColor = .systemYellow
-        case .unhealthy:
-            imageName = "circle.fill"
-            tintColor = .systemRed
-        case .needsAuth:
-            imageName = "circle.fill"
-            tintColor = .systemOrange
-        case .unknown, .disabled:
-            imageName = "circle"
-            tintColor = .secondaryLabelColor
-        }
-
-        if let image = NSImage(systemSymbolName: imageName, accessibilityDescription: status.displayName) {
+        if let image = NSImage(systemSymbolName: imageName, accessibilityDescription: "MCP Contxt") {
             let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
             let configuredImage = image.withSymbolConfiguration(config)
             button.image = configuredImage
             button.contentTintColor = tintColor
         }
 
-        button.toolTip = "MCP Contxt - \(status.displayName)"
+        let serverCount = registry.servers.count
+        let statusText = serverCount == 0 ? "No servers" : "\(serverCount) server\(serverCount == 1 ? "" : "s")"
+        button.toolTip = "MCP Contxt - \(statusText)"
     }
-}
-
-// MARK: - Notification Names
-
-extension Notification.Name {
-    static let refreshServers = Notification.Name("refreshServers")
 }

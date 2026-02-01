@@ -15,18 +15,13 @@ struct AddServerView: View {
     let onDismiss: (() -> Void)?
 
     @State private var name: String = ""
-    @State private var serverType: MCPServerType = .stdio
+    @State private var serverType: MCPServerType = .http
     @State private var url: String = ""
     @State private var headers: [HeaderEntry] = []
     @State private var command: String = ""
     @State private var args: String = ""
     @State private var envVars: [EnvEntry] = []
-    @State private var syncToDesktop: Bool = true
-    @State private var syncToCLI: Bool = true
-    @State private var isEnabled: Bool = true
 
-    @State private var isTesting: Bool = false
-    @State private var testResult: TestResult?
     @State private var isSaving: Bool = false
     @State private var errorMessage: String?
 
@@ -57,7 +52,7 @@ struct AddServerView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     basicInfoSection
                     configurationSection
-                    syncTargetsSection
+                    infoSection
                 }
                 .padding()
             }
@@ -67,7 +62,7 @@ struct AddServerView: View {
             // Footer
             footer
         }
-        .frame(width: 480, height: 520)
+        .frame(width: 480, height: 480)
         .onAppear(perform: loadEditingServer)
     }
 
@@ -105,16 +100,6 @@ struct AddServerView: View {
                     }
                 }
                 .labelsHidden()
-            }
-
-            if !isEnabled {
-                HStack {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(.secondary)
-                    Text("This server is disabled and won't be synced")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
         }
     }
@@ -215,34 +200,20 @@ struct AddServerView: View {
         }
     }
 
-    private var syncTargetsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Sync To")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.secondary)
-
-            Toggle("Claude Desktop", isOn: $syncToDesktop)
-                .disabled(!ConfigurationManager.shared.isClaudeDesktopAvailable)
-
-            Toggle("Claude Code CLI", isOn: $syncToCLI)
-
-            Toggle("Enable Server", isOn: $isEnabled)
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(.secondary)
+                Text("Server will be saved to ~/.claude.json for use with Claude Code")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
     }
 
     private var footer: some View {
         HStack {
-            if let result = testResult {
-                HStack(spacing: 6) {
-                    Image(systemName: result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .foregroundColor(result.success ? .green : .red)
-                    Text(result.message)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-
             if let error = errorMessage {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -254,11 +225,6 @@ struct AddServerView: View {
             }
 
             Spacer()
-
-            Button("Test Connection") {
-                testConnection()
-            }
-            .disabled(isTesting || !isValid)
 
             Button(isEditing ? "Save" : "Add Server") {
                 save()
@@ -285,9 +251,6 @@ struct AddServerView: View {
 
         name = server.name
         serverType = server.type
-        isEnabled = server.isEnabled
-        syncToDesktop = server.syncTargets.contains(.claudeDesktop)
-        syncToCLI = server.syncTargets.contains(.claudeCodeUser)
 
         switch server.type {
         case .http, .sse:
@@ -300,83 +263,44 @@ struct AddServerView: View {
         }
     }
 
-    private func testConnection() {
-        isTesting = true
-        testResult = nil
-
-        Task {
-            let server = buildServer()
-            let (status, message) = await HealthMonitor.shared.checkServerHealth(server)
-
-            await MainActor.run {
-                isTesting = false
-                testResult = TestResult(
-                    success: status == .healthy,
-                    message: message ?? status.displayName
-                )
-            }
-        }
-    }
-
     private func save() {
         isSaving = true
         errorMessage = nil
 
-        Task {
-            do {
-                let server = buildServer()
+        do {
+            let config = buildConfig()
+            try ClaudeConfigService.shared.addServer(name: name, config: config)
 
-                if isEditing {
-                    try await registry.update(server)
-                } else {
-                    try await registry.add(server)
-                }
-
-                try await SyncService.shared.syncServer(server)
-
+            // Reload registry
+            Task {
+                await registry.loadFromClaudeConfig()
                 await MainActor.run {
                     dismiss()
                 }
-            } catch {
-                await MainActor.run {
-                    isSaving = false
-                    errorMessage = error.localizedDescription
-                }
             }
+        } catch {
+            isSaving = false
+            errorMessage = error.localizedDescription
         }
     }
 
-    private func buildServer() -> MCPServer {
-        var syncTargets: Set<SyncTarget> = []
-        if syncToDesktop { syncTargets.insert(.claudeDesktop) }
-        if syncToCLI { syncTargets.insert(.claudeCodeUser) }
-
-        let configuration: MCPServerConfiguration
+    private func buildConfig() -> MCPServerConfig {
         switch serverType {
         case .http, .sse:
             let headersDict = headers.isEmpty ? nil : Dictionary(uniqueKeysWithValues: headers.map { ($0.key, $0.value) })
-            configuration = .http(url: url, headers: headersDict)
+            return MCPServerConfig(
+                type: serverType == .sse ? "sse" : "http",
+                url: url,
+                headers: headersDict
+            )
         case .stdio:
             let argsArray = args.isEmpty ? nil : args.components(separatedBy: " ").filter { !$0.isEmpty }
             let envDict = envVars.isEmpty ? nil : Dictionary(uniqueKeysWithValues: envVars.map { ($0.key, $0.value) })
-            configuration = .stdio(command: command, args: argsArray, env: envDict)
-        }
-
-        if let existing = editingServer {
-            var updated = existing
-            updated.name = name
-            updated.type = serverType
-            updated.configuration = configuration
-            updated.isEnabled = isEnabled
-            updated.syncTargets = syncTargets
-            return updated
-        } else {
-            return MCPServer(
-                name: name,
-                type: serverType,
-                configuration: configuration,
-                isEnabled: isEnabled,
-                syncTargets: syncTargets
+            return MCPServerConfig(
+                type: "stdio",
+                command: command,
+                args: argsArray,
+                env: envDict
             )
         }
     }
@@ -394,11 +318,6 @@ struct EnvEntry: Identifiable {
     let id = UUID()
     var key: String = ""
     var value: String = ""
-}
-
-struct TestResult {
-    let success: Bool
-    let message: String
 }
 
 #Preview {

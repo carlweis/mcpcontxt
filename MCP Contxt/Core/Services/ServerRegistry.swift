@@ -2,7 +2,8 @@
 //  ServerRegistry.swift
 //  MCP Contxt
 //
-//  The source of truth for all MCP server configurations
+//  Manages MCP servers from ~/.claude.json
+//  Source of truth for the UI - reads/writes directly to Claude config
 //
 
 import Foundation
@@ -17,98 +18,78 @@ class ServerRegistry: ObservableObject {
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var lastError: Error?
 
-    private let fileManager = FileManager.default
-    private let encoder: JSONEncoder
-    private let decoder: JSONDecoder
+    private init() {}
 
-    private var registryURL: URL {
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDirectory = appSupport.appendingPathComponent("MCP Contxt")
-        return appDirectory.appendingPathComponent("servers.json")
-    }
-
-    private init() {
-        encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        encoder.dateEncodingStrategy = .iso8601
-
-        decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-    }
+    // MARK: - Load from ~/.claude.json
 
     func load() async {
+        await loadFromClaudeConfig()
+    }
+
+    func loadFromClaudeConfig() async {
         isLoading = true
         defer { isLoading = false }
 
-        do {
-            guard fileManager.fileExists(atPath: registryURL.path) else {
-                servers = []
-                return
-            }
+        let configServers = ClaudeConfigService.shared.readServers()
 
-            let data = try Data(contentsOf: registryURL)
-            let registry = try decoder.decode(ServerRegistryFile.self, from: data)
-            servers = registry.servers
-            lastError = nil
-        } catch {
-            lastError = error
-            servers = []
-        }
+        servers = configServers.map { (name, config) in
+            MCPServer(
+                name: name,
+                type: serverType(from: config),
+                configuration: MCPServerConfiguration(
+                    url: config.url,
+                    headers: config.headers,
+                    command: config.command,
+                    args: config.args,
+                    env: config.env
+                ),
+                isEnabled: true,
+                syncTargets: [.claudeCodeUser],
+                source: .claudeCode
+            )
+        }.sorted { $0.name < $1.name }
+
+        print("[ServerRegistry] Loaded \(servers.count) servers from ~/.claude.json")
+        lastError = nil
     }
 
-    func save() async throws {
-        // Ensure directory exists
-        let directory = registryURL.deletingLastPathComponent()
-        if !fileManager.fileExists(atPath: directory.path) {
-            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        }
-
-        let registry = ServerRegistryFile(version: 1, servers: servers)
-        let data = try encoder.encode(registry)
-        try data.write(to: registryURL, options: .atomic)
+    private func serverType(from config: MCPServerConfig) -> MCPServerType {
+        if config.isSSE { return .sse }
+        if config.isHTTP { return .http }
+        if config.isStdio { return .stdio }
+        return .http
     }
+
+    // MARK: - Add/Remove Servers
 
     func add(_ server: MCPServer) async throws {
-        guard !servers.contains(where: { $0.name == server.name }) else {
-            throw ServerRegistryError.duplicateName(server.name)
-        }
+        let config = MCPServerConfig(
+            type: server.type.rawValue,
+            url: server.configuration.url,
+            headers: server.configuration.headers,
+            command: server.configuration.command,
+            args: server.configuration.args,
+            env: server.configuration.env
+        )
 
-        servers.append(server)
-        try await save()
-    }
-
-    func update(_ server: MCPServer) async throws {
-        guard let index = servers.firstIndex(where: { $0.id == server.id }) else {
-            throw ServerRegistryError.serverNotFound(server.id)
-        }
-
-        var updatedServer = server
-        updatedServer.metadata.lastModifiedAt = Date()
-        servers[index] = updatedServer
-        try await save()
+        try ClaudeConfigService.shared.addServer(name: server.name, config: config)
+        await loadFromClaudeConfig()
     }
 
     func remove(_ server: MCPServer) async throws {
-        guard server.source != .enterprise else {
-            throw ServerRegistryError.cannotModifyEnterprise
-        }
-
-        servers.removeAll { $0.id == server.id }
-        try await save()
+        try ClaudeConfigService.shared.removeServer(name: server.name)
+        await loadFromClaudeConfig()
     }
 
     func remove(at offsets: IndexSet) async throws {
         let serversToRemove = offsets.map { servers[$0] }
-
         for server in serversToRemove {
-            guard server.source != .enterprise else {
-                throw ServerRegistryError.cannotModifyEnterprise
-            }
+            try ClaudeConfigService.shared.removeServer(name: server.name)
         }
-
-        servers.remove(atOffsets: offsets)
-        try await save()
+        await loadFromClaudeConfig()
     }
+
+    // MARK: - Queries
 
     func server(withName name: String) -> MCPServer? {
         servers.first { $0.name == name }
@@ -118,87 +99,19 @@ class ServerRegistry: ObservableObject {
         servers.first { $0.id == id }
     }
 
-    func updateHealthStatus(for serverID: UUID, status: HealthStatus, message: String? = nil) async throws {
-        guard let index = servers.firstIndex(where: { $0.id == serverID }) else {
-            throw ServerRegistryError.serverNotFound(serverID)
-        }
-
-        servers[index].metadata.healthStatus = status
-        servers[index].metadata.healthMessage = message
-        servers[index].metadata.lastHealthCheckAt = Date()
-        try await save()
-    }
-
-    func markSynced(for serverID: UUID) async throws {
-        guard let index = servers.firstIndex(where: { $0.id == serverID }) else {
-            throw ServerRegistryError.serverNotFound(serverID)
-        }
-
-        servers[index].metadata.lastSyncedAt = Date()
-        try await save()
-    }
-
-    func importServers(_ newServers: [MCPServer], replacing: Bool = false) async throws {
-        if replacing {
-            // Replace servers with same name
-            for newServer in newServers {
-                if let existingIndex = servers.firstIndex(where: { $0.name == newServer.name }) {
-                    servers[existingIndex] = newServer
-                } else {
-                    servers.append(newServer)
-                }
-            }
-        } else {
-            // Only add servers that don't exist
-            for newServer in newServers {
-                if !servers.contains(where: { $0.name == newServer.name }) {
-                    servers.append(newServer)
-                }
-            }
-        }
-
-        try await save()
-    }
-
     var enabledServers: [MCPServer] {
         servers.filter { $0.isEnabled }
     }
 
-    var editableServers: [MCPServer] {
-        servers.filter { $0.source.isEditable }
-    }
-
-    var enterpriseServers: [MCPServer] {
-        servers.filter { $0.source == .enterprise }
-    }
-
     var overallHealthStatus: HealthStatus {
-        HealthStatus.overallStatus(from: servers)
+        // Simple status - just check if we have servers
+        if servers.isEmpty { return .unknown }
+        return .healthy
     }
-}
 
-// MARK: - File Format
+    // MARK: - Refresh
 
-private struct ServerRegistryFile: Codable {
-    let version: Int
-    let servers: [MCPServer]
-}
-
-// MARK: - Errors
-
-enum ServerRegistryError: LocalizedError {
-    case duplicateName(String)
-    case serverNotFound(UUID)
-    case cannotModifyEnterprise
-
-    var errorDescription: String? {
-        switch self {
-        case .duplicateName(let name):
-            return "A server named '\(name)' already exists"
-        case .serverNotFound(let id):
-            return "Server with ID \(id) not found"
-        case .cannotModifyEnterprise:
-            return "Enterprise servers cannot be modified"
-        }
+    func refresh() async {
+        await loadFromClaudeConfig()
     }
 }

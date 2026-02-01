@@ -7,47 +7,15 @@
 
 import SwiftUI
 import ServiceManagement
-import UserNotifications
 import AppKit
 
 struct GeneralSettingsView: View {
-    @AppStorage("syncToClaudeDesktop") private var syncToClaudeDesktop = true
-    @AppStorage("syncToClaudeCode") private var syncToClaudeCode = true
-    @AppStorage("autoSyncOnChanges") private var autoSyncOnChanges = true
     @AppStorage("launchAtLogin") private var launchAtLogin = false
     @AppStorage("showInDock") private var showInDock = false
-    @AppStorage("healthCheckInterval") private var healthCheckInterval: Double = 30
-    @AppStorage("showNotificationOnFailure") private var showNotificationOnFailure = true
-    @AppStorage("showNotificationOnAuthExpiry") private var showNotificationOnAuthExpiry = true
-
-    @State private var notificationsAuthorized = false
 
     var body: some View {
         Form {
-            Section("Sync Targets") {
-                Toggle(isOn: $syncToClaudeDesktop) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Claude Desktop")
-                        Text(SyncTarget.claudeDesktop.description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .disabled(!ConfigurationManager.shared.isClaudeDesktopAvailable)
-
-                Toggle(isOn: $syncToClaudeCode) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Claude Code CLI (User Scope)")
-                        Text(SyncTarget.claudeCodeUser.description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-
             Section("Behavior") {
-                Toggle("Auto-sync when servers change", isOn: $autoSyncOnChanges)
-
                 Toggle("Launch MCP Contxt at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         setLaunchAtLogin(newValue)
@@ -59,36 +27,36 @@ struct GeneralSettingsView: View {
                     }
             }
 
-            Section("Health Monitoring") {
-                Picker("Check interval", selection: $healthCheckInterval) {
-                    ForEach(HealthCheckInterval.allCases) { interval in
-                        Text(interval.displayName).tag(interval.rawValue)
-                    }
+            Section("About MCP Contxt") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("MCP Contxt makes it easy to add MCP servers to Claude Code.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    Text("Servers are saved to ~/.claude.json and are automatically available in Claude Code CLI.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
-                .onChange(of: healthCheckInterval) { _, newValue in
-                    HealthMonitor.shared.setCheckInterval(newValue)
-                }
+            }
 
-                Toggle("Show notification on server failure", isOn: $showNotificationOnFailure)
-                    .disabled(!notificationsAuthorized)
+            Section("About Claude Desktop") {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Claude Desktop uses \"Connectors\" for integrations like Slack, Linear, Figma, etc.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
-                Toggle("Show notification when auth expires", isOn: $showNotificationOnAuthExpiry)
-                    .disabled(!notificationsAuthorized)
+                    Text("Connectors are managed in Claude Desktop > Settings > Connectors")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
-                if !notificationsAuthorized {
-                    Button("Enable Notifications") {
-                        Task {
-                            notificationsAuthorized = await NotificationService.shared.requestAuthorization()
-                        }
-                    }
+                    Text("Note: Connectors are different from MCP servers and cannot be managed by this app.")
+                        .font(.caption)
+                        .foregroundColor(.orange)
                 }
             }
         }
         .formStyle(.grouped)
         .padding()
-        .onAppear {
-            checkNotificationAuthorization()
-        }
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {
@@ -109,15 +77,6 @@ struct GeneralSettingsView: View {
             NSApp.setActivationPolicy(.regular)
         } else {
             NSApp.setActivationPolicy(.accessory)
-        }
-    }
-
-    private func checkNotificationAuthorization() {
-        Task {
-            let settings = await UNUserNotificationCenter.current().notificationSettings()
-            await MainActor.run {
-                notificationsAuthorized = settings.authorizationStatus == .authorized
-            }
         }
     }
 }
