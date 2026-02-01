@@ -1,6 +1,6 @@
 //
-//  MCP_ContxtApp.swift
-//  MCP Contxt
+//  MCPControlApp.swift
+//  MCPControl
 //
 //  Created by Carl on 1/31/26.
 //
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @main
-struct MCP_ContxtApp: App {
+struct MCPControlApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var registry = ServerRegistry.shared
 

@@ -1,13 +1,13 @@
 //
-//  MCP_ContxtUITestsLaunchTests.swift
-//  MCP ContxtUITests
+//  MCPControlUITestsLaunchTests.swift
+//  MCPControlUITests
 //
 //  Created by Carl on 1/31/26.
 //
 
 import XCTest
 
-final class MCP_ContxtUITestsLaunchTests: XCTestCase {
+final class MCPControlUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

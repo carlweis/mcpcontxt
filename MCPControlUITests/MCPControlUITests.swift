@@ -1,13 +1,13 @@
 //
-//  MCP_ContxtUITests.swift
-//  MCP ContxtUITests
+//  MCPControlUITests.swift
+//  MCPControlUITests
 //
 //  Created by Carl on 1/31/26.
 //
 
 import XCTest
 
-final class MCP_ContxtUITests: XCTestCase {
+final class MCPControlUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
