@@ -132,7 +132,7 @@ enum ServerSource: String, Codable, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .mcpContxt: return "MCP Contxt"
+        case .mcpContxt: return "MCP Control"
         case .claudeDesktop: return "Claude Desktop"
         case .claudeCode: return "Claude Code"
         case .enterprise: return "Enterprise"

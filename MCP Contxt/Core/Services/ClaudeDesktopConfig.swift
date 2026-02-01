@@ -2,7 +2,8 @@
 //  ClaudeDesktopConfig.swift
 //  MCP Contxt
 //
-//  Read/write Claude Desktop configuration file
+//  DEPRECATED: Claude Desktop uses Connectors, not MCP config files
+//  This stub exists to prevent build errors from any remaining references
 //
 
 import Foundation
@@ -10,153 +11,32 @@ import Foundation
 class ClaudeDesktopConfig {
     static let shared = ClaudeDesktopConfig()
 
-    private let fileManager = FileManager.default
-    private let encoder: JSONEncoder
-    private let decoder: JSONDecoder
+    private init() {}
 
-    private var configURL: URL {
-        SyncTarget.claudeDesktop.configPath
-    }
-
-    private init() {
-        encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-
-        decoder = JSONDecoder()
-    }
-
-    func read() throws -> ClaudeDesktopConfigFile {
-        guard fileManager.fileExists(atPath: configURL.path) else {
-            return ClaudeDesktopConfigFile()
-        }
-
-        let data = try Data(contentsOf: configURL)
-        return try decoder.decode(ClaudeDesktopConfigFile.self, from: data)
-    }
-
-    func write(_ config: ClaudeDesktopConfigFile) throws {
-        // Ensure directory exists
-        let directory = configURL.deletingLastPathComponent()
-        if !fileManager.fileExists(atPath: directory.path) {
-            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        }
-
-        let data = try encoder.encode(config)
-        try data.write(to: configURL, options: .atomic)
-    }
-
-    func readServers() throws -> [String: ClaudeDesktopServerConfig] {
-        let config = try read()
-        return config.mcpServers ?? [:]
-    }
-
-    func writeServers(_ servers: [String: ClaudeDesktopServerConfig]) throws {
-        var config = try read()
-        config.mcpServers = servers
-        try write(config)
+    var isAvailable: Bool {
+        false // Claude Desktop uses Connectors, not config files
     }
 
     func importServers() throws -> [MCPServer] {
-        let serverConfigs = try readServers()
-
-        return serverConfigs.map { name, config in
-            let serverType: MCPServerType
-            let configuration: MCPServerConfiguration
-
-            if let type = config.type, type == "http" {
-                serverType = .http
-                configuration = .http(
-                    url: config.url ?? "",
-                    headers: config.headers
-                )
-            } else if config.url != nil {
-                serverType = .sse
-                configuration = .http(
-                    url: config.url ?? "",
-                    headers: config.headers
-                )
-            } else {
-                serverType = .stdio
-                configuration = .stdio(
-                    command: config.command ?? "",
-                    args: config.args,
-                    env: config.env
-                )
-            }
-
-            return MCPServer(
-                name: name,
-                type: serverType,
-                configuration: configuration,
-                source: .claudeDesktop
-            )
-        }
+        return []
     }
 
     func exportServers(_ servers: [MCPServer]) throws {
-        var existingServers = try readServers()
-
-        for server in servers where server.syncTargets.contains(.claudeDesktop) && server.isEnabled {
-            let config = server.toClaudeDesktopConfig()
-            existingServers[server.name] = config
-        }
-
-        try writeServers(existingServers)
+        // No-op - Claude Desktop uses Connectors
     }
 
-    func removeServer(named name: String) throws {
-        var servers = try readServers()
-        servers.removeValue(forKey: name)
-        try writeServers(servers)
-    }
-
-    var isAvailable: Bool {
-        SyncTarget.claudeDesktop.isAvailable
+    func removeServer(named: String) throws {
+        // No-op - Claude Desktop uses Connectors
     }
 }
 
-// MARK: - Config File Models
+// MARK: - Config File Models (kept for compatibility)
 
 struct ClaudeDesktopConfigFile: Codable {
     var mcpServers: [String: ClaudeDesktopServerConfig]?
 
-    // Preserve other fields that may exist in the config
-    var additionalFields: [String: AnyCodable]?
-
     init(mcpServers: [String: ClaudeDesktopServerConfig]? = nil) {
         self.mcpServers = mcpServers
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case mcpServers
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        mcpServers = try container.decodeIfPresent([String: ClaudeDesktopServerConfig].self, forKey: .mcpServers)
-
-        // Decode any additional fields
-        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKeys.self)
-        var additional = [String: AnyCodable]()
-        for key in dynamicContainer.allKeys {
-            if key.stringValue != "mcpServers" {
-                additional[key.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: key)
-            }
-        }
-        additionalFields = additional.isEmpty ? nil : additional
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(mcpServers, forKey: .mcpServers)
-
-        // Encode additional fields
-        if let additional = additionalFields {
-            var dynamicContainer = encoder.container(keyedBy: DynamicCodingKeys.self)
-            for (key, value) in additional {
-                try dynamicContainer.encode(value, forKey: DynamicCodingKeys(stringValue: key)!)
-            }
-        }
     }
 }
 
@@ -173,25 +53,14 @@ struct ClaudeDesktopServerConfig: Codable {
 
 extension MCPServer {
     func toClaudeDesktopConfig() -> ClaudeDesktopServerConfig {
-        switch type {
-        case .http:
-            return ClaudeDesktopServerConfig(
-                type: "http",
-                url: configuration.url,
-                headers: configuration.headers
-            )
-        case .sse:
-            return ClaudeDesktopServerConfig(
-                url: configuration.url,
-                headers: configuration.headers
-            )
-        case .stdio:
-            return ClaudeDesktopServerConfig(
-                command: configuration.command,
-                args: configuration.args,
-                env: configuration.env
-            )
-        }
+        return ClaudeDesktopServerConfig(
+            type: type.rawValue,
+            url: configuration.url,
+            headers: configuration.headers,
+            command: configuration.command,
+            args: configuration.args,
+            env: configuration.env
+        )
     }
 }
 

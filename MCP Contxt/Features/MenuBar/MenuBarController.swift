@@ -1,6 +1,6 @@
 //
 //  MenuBarController.swift
-//  MCP Contxt
+//  MCP Control
 //
 //  Manages the NSStatusItem and popover for the menu bar
 //
@@ -105,13 +105,13 @@ class MenuBarController: NSObject, ObservableObject {
     private func showContextMenu() {
         let menu = NSMenu()
 
-        menu.addItem(NSMenuItem(title: "Open MCP Contxt", action: #selector(showPopoverFromMenu), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open MCP Control", action: #selector(showPopoverFromMenu), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Refresh", action: #selector(refreshServers), keyEquivalent: "r"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Quit MCP Contxt", action: #selector(quitApp), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit MCP Control", action: #selector(quitApp), keyEquivalent: "q"))
 
         for item in menu.items {
             item.target = self
@@ -150,7 +150,7 @@ class MenuBarController: NSObject, ObservableObject {
         let imageName = hasServers ? "circle.fill" : "circle"
         let tintColor: NSColor = hasServers ? .systemGreen : .secondaryLabelColor
 
-        if let image = NSImage(systemSymbolName: imageName, accessibilityDescription: "MCP Contxt") {
+        if let image = NSImage(systemSymbolName: imageName, accessibilityDescription: "MCP Control") {
             let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
             let configuredImage = image.withSymbolConfiguration(config)
             button.image = configuredImage
@@ -159,6 +159,6 @@ class MenuBarController: NSObject, ObservableObject {
 
         let serverCount = registry.servers.count
         let statusText = serverCount == 0 ? "No servers" : "\(serverCount) server\(serverCount == 1 ? "" : "s")"
-        button.toolTip = "MCP Contxt - \(statusText)"
+        button.toolTip = "MCP Control - \(statusText)"
     }
 }

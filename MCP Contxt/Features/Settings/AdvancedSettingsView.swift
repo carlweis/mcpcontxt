@@ -1,6 +1,6 @@
 //
 //  AdvancedSettingsView.swift
-//  MCP Contxt
+//  MCP Control
 //
 //  Advanced settings tab
 //
@@ -40,7 +40,7 @@ struct AdvancedSettingsView: View {
 
                 LabeledContent("App Data") {
                     Button(action: openAppDataFolder) {
-                        Text("~/Library/Application Support/MCP Contxt")
+                        Text("~/Library/Application Support/MCP Control")
                             .font(.caption)
                     }
                     .buttonStyle(.link)
@@ -83,7 +83,7 @@ struct AdvancedSettingsView: View {
 
     private func openAppDataFolder() {
         let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            .appendingPathComponent("MCP Contxt")
+            .appendingPathComponent("MCP Control")
 
         // Create directory if it doesn't exist
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)

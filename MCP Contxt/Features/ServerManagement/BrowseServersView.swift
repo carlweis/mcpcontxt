@@ -175,16 +175,6 @@ struct BrowseServersView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                 }
-
-                // Auth link for HTTP servers
-                if let authURL = server.authURL {
-                    Link(destination: authURL) {
-                        Label("Connect", systemImage: "arrow.up.forward")
-                            .font(.caption)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.mini)
-                }
             }
         }
         .padding()

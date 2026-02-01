@@ -19,11 +19,6 @@ struct MCPCatalogServer: Identifiable, Hashable {
         case http
         case sse
     }
-
-    var authURL: URL? {
-        // Most MCP servers use OAuth - the URL itself handles auth
-        URL(string: url)
-    }
 }
 
 struct MCPCatalog {

@@ -33,25 +33,33 @@ struct PopoverView: View {
         .frame(width: 320)
         .background(Color(NSColor.windowBackgroundColor))
         .onAppear {
+            print("[PopoverView] onAppear - loading servers")
             Task {
                 await registry.loadFromClaudeConfig()
+                print("[PopoverView] onAppear load complete, showing \(registry.servers.count) servers")
             }
         }
     }
 
     private var header: some View {
         HStack {
-            Text("MCP Contxt")
+            Text("MCP Control")
                 .font(.headline)
 
             Spacer()
 
-            Button(action: refresh) {
-                Image(systemName: "arrow.clockwise")
-                    .foregroundColor(.secondary)
+            if registry.isLoading {
+                ProgressView()
+                    .scaleEffect(0.6)
+                    .frame(width: 16, height: 16)
+            } else {
+                Button(action: refresh) {
+                    Image(systemName: "arrow.clockwise")
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Refresh from ~/.claude.json")
             }
-            .buttonStyle(.plain)
-            .help("Refresh")
 
             Button(action: openSettings) {
                 Image(systemName: "gear")
@@ -69,8 +77,10 @@ struct PopoverView: View {
     }
 
     private func refresh() {
+        print("[PopoverView] Refresh button tapped")
         Task {
             await registry.loadFromClaudeConfig()
+            print("[PopoverView] Refresh complete, now showing \(registry.servers.count) servers")
         }
     }
 
@@ -146,6 +156,13 @@ struct PopoverView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
+
+            Button(action: { NSApplication.shared.terminate(nil) }) {
+                Image(systemName: "power")
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Quit MCP Control")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

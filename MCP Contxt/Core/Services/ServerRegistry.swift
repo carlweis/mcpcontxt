@@ -27,10 +27,12 @@ class ServerRegistry: ObservableObject {
     }
 
     func loadFromClaudeConfig() async {
+        print("[ServerRegistry] Starting load from ~/.claude.json")
         isLoading = true
         defer { isLoading = false }
 
         let configServers = ClaudeConfigService.shared.readServers()
+        print("[ServerRegistry] Got \(configServers.count) servers from ClaudeConfigService")
 
         servers = configServers.map { (name, config) in
             MCPServer(
@@ -49,7 +51,7 @@ class ServerRegistry: ObservableObject {
             )
         }.sorted { $0.name < $1.name }
 
-        print("[ServerRegistry] Loaded \(servers.count) servers from ~/.claude.json")
+        print("[ServerRegistry] Loaded \(servers.count) servers: \(servers.map { $0.name }.joined(separator: ", "))")
         lastError = nil
     }
 

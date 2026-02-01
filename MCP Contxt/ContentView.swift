@@ -15,7 +15,7 @@ struct ContentView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 
-            Text("MCP Contxt")
+            Text("MCP Control")
                 .font(.title)
 
             Text("This app runs in the menu bar.\nLook for the status icon at the top of your screen.")

@@ -154,16 +154,17 @@ struct ServerDetailView: View {
                 .foregroundColor(.secondary)
 
             VStack(alignment: .leading, spacing: 8) {
-                if server.type == .http || server.type == .sse, let url = server.configuration.url {
-                    Text("Most MCP servers use OAuth for authentication. Click the link below to authenticate with this service.")
+                if server.type == .http || server.type == .sse {
+                    Text("Authentication happens automatically in Claude Code. When you first use this server, Claude Code will open your browser to complete the OAuth flow.")
                         .font(.caption)
                         .foregroundColor(.secondary)
 
-                    if let authURL = URL(string: url) {
-                        Link(destination: authURL) {
-                            Label("Open \(server.name) to authenticate", systemImage: "arrow.up.forward")
-                        }
-                        .buttonStyle(.bordered)
+                    HStack(spacing: 4) {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.blue)
+                        Text("Just start using the server in Claude Code to authenticate.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 } else {
                     Text("This stdio server runs locally and may require environment variables for authentication (like API tokens).")
@@ -187,14 +188,20 @@ struct ServerDetailView: View {
 
             Spacer()
 
-            if let url = server.configuration.url, let authURL = URL(string: url) {
-                Link(destination: authURL) {
-                    Label("Connect", systemImage: "arrow.up.forward")
-                }
-                .buttonStyle(.borderedProminent)
+            Button {
+                copyConfigHint()
+            } label: {
+                Label("Copy Server Name", systemImage: "doc.on.doc")
             }
+            .buttonStyle(.borderedProminent)
         }
         .padding()
+    }
+
+    private func copyConfigHint() {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(server.name, forType: .string)
     }
 
     private func removeServer() {

@@ -14,7 +14,16 @@ class ClaudeConfigService {
     private let configURL: URL
 
     private init() {
-        configURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude.json")
+        // Get the REAL home directory, not the sandboxed one
+        // FileManager.homeDirectoryForCurrentUser returns sandboxed path
+        let realHomeDirectory: URL
+        if let pw = getpwuid(getuid()), let home = pw.pointee.pw_dir {
+            realHomeDirectory = URL(fileURLWithPath: String(cString: home))
+        } else {
+            // Fallback to environment variable
+            realHomeDirectory = URL(fileURLWithPath: ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory())
+        }
+        configURL = realHomeDirectory.appendingPathComponent(".claude.json")
     }
 
     var configExists: Bool {
@@ -28,40 +37,64 @@ class ClaudeConfigService {
     // MARK: - Read Servers
 
     func readServers() -> [String: MCPServerConfig] {
+        print("[ClaudeConfigService] Reading servers from \(configURL.path)")
+
         guard configExists else {
             print("[ClaudeConfigService] Config file does not exist at \(configURL.path)")
             return [:]
         }
 
-        guard let data = try? Data(contentsOf: configURL) else {
-            print("[ClaudeConfigService] Failed to read config file")
+        do {
+            let data = try Data(contentsOf: configURL)
+            print("[ClaudeConfigService] Read \(data.count) bytes from file")
+
+            guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                print("[ClaudeConfigService] Failed to parse JSON as dictionary")
+                return [:]
+            }
+
+            print("[ClaudeConfigService] Parsed JSON with \(json.keys.count) top-level keys")
+
+            // Try to get mcpServers - handle both dict of dicts and other formats
+            guard let mcpServersRaw = json["mcpServers"] else {
+                print("[ClaudeConfigService] No mcpServers key found. Top-level keys: \(Array(json.keys).sorted().joined(separator: ", "))")
+                return [:]
+            }
+
+            print("[ClaudeConfigService] mcpServers type: \(type(of: mcpServersRaw))")
+
+            guard let mcpServers = mcpServersRaw as? [String: Any] else {
+                print("[ClaudeConfigService] mcpServers is not a dictionary")
+                return [:]
+            }
+
+            print("[ClaudeConfigService] Found \(mcpServers.count) server entries: \(mcpServers.keys.joined(separator: ", "))")
+
+            var result: [String: MCPServerConfig] = [:]
+            for (name, configRaw) in mcpServers {
+                guard let config = configRaw as? [String: Any] else {
+                    print("[ClaudeConfigService] Server '\(name)' config is not a dictionary, skipping")
+                    continue
+                }
+
+                result[name] = MCPServerConfig(
+                    type: config["type"] as? String,
+                    url: config["url"] as? String,
+                    headers: config["headers"] as? [String: String],
+                    command: config["command"] as? String,
+                    args: config["args"] as? [String],
+                    env: config["env"] as? [String: String]
+                )
+                print("[ClaudeConfigService] Loaded server: \(name) -> \(config["url"] as? String ?? "no url")")
+            }
+
+            print("[ClaudeConfigService] Successfully loaded \(result.count) servers")
+            return result
+
+        } catch {
+            print("[ClaudeConfigService] Error reading config: \(error)")
             return [:]
         }
-
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            print("[ClaudeConfigService] Failed to parse JSON")
-            return [:]
-        }
-
-        guard let mcpServers = json["mcpServers"] as? [String: [String: Any]] else {
-            print("[ClaudeConfigService] No mcpServers found in config")
-            return [:]
-        }
-
-        var result: [String: MCPServerConfig] = [:]
-        for (name, config) in mcpServers {
-            result[name] = MCPServerConfig(
-                type: config["type"] as? String,
-                url: config["url"] as? String,
-                headers: config["headers"] as? [String: String],
-                command: config["command"] as? String,
-                args: config["args"] as? [String],
-                env: config["env"] as? [String: String]
-            )
-        }
-
-        print("[ClaudeConfigService] Loaded \(result.count) servers")
-        return result
     }
 
     // MARK: - Write Servers

@@ -50,9 +50,8 @@ class AppState: ObservableObject {
         ConfigurationFileWatcher.shared.clearChanges()
     }
 
-    func refreshFromExternalChanges() async throws {
-        let result = try await configManager.discoverExistingServers()
-        try await configManager.importDiscoveredServers(result.mergedServers, replacing: true)
+    func refreshFromExternalChanges() async {
+        await registry.loadFromClaudeConfig()
         acknowledgeExternalChanges()
     }
 }
