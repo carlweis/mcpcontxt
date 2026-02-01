@@ -1,6 +1,6 @@
 //
 //  ImportServersView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Show current servers from ~/.claude.json
 //

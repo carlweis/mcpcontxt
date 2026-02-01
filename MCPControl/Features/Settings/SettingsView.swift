@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Main settings window
 //

@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  NSApplicationDelegate for menu bar app functionality
 //

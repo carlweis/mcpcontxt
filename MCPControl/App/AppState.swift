@@ -1,6 +1,6 @@
 //
 //  AppState.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Global application state
 //

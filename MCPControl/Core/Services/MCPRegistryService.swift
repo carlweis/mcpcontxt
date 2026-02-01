@@ -1,6 +1,6 @@
 //
 //  MCPRegistryService.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Fetches available MCP servers from the Anthropic registry
 //

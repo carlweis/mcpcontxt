@@ -1,6 +1,6 @@
 //
 //  MCPCatalog.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Static catalog of MCP servers from Anthropic registry
 //  No network requests needed - data embedded in app

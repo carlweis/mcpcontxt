@@ -1,6 +1,6 @@
 //
 //  KeychainService.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Secure credential storage using macOS Keychain
 //

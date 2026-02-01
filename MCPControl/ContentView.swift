@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  This file is kept for compatibility but the app runs as a menu bar app.
 //  See PopoverView for the main UI.

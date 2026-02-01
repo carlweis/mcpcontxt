@@ -1,6 +1,6 @@
 //
 //  ClaudeCodeConfig.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: Use ClaudeConfigService instead for direct ~/.claude.json operations
 //  This stub exists to prevent build errors from any remaining references

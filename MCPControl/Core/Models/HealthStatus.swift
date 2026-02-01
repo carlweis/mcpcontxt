@@ -1,6 +1,6 @@
 //
 //  HealthStatus.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Health status indicators for MCP servers
 //

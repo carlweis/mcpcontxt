@@ -1,6 +1,6 @@
 //
 //  LogParser.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: Log parsing removed in simplified architecture
 //  This stub exists to prevent build errors from any remaining references

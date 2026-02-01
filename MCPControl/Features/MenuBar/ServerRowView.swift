@@ -1,6 +1,6 @@
 //
 //  ServerRowView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Individual server row in the popover list
 //
@@ -18,11 +18,13 @@ struct ServerRowView: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 10) {
-                // Server icon
-                Image(systemName: serverIcon)
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
-                    .frame(width: 16)
+                // Server icon (fetched favicon or fallback SF Symbol)
+                ServerIconView(
+                    serverId: server.name,
+                    serverURL: server.configuration.url,
+                    serverType: server.type,
+                    size: 24
+                )
 
                 // Server info
                 VStack(alignment: .leading, spacing: 2) {
@@ -72,17 +74,6 @@ struct ServerRowView: View {
             withAnimation(.easeInOut(duration: 0.15)) {
                 isHovering = hovering
             }
-        }
-    }
-
-    private var serverIcon: String {
-        switch server.type {
-        case .http:
-            return "globe"
-        case .sse:
-            return "antenna.radiowaves.left.and.right"
-        case .stdio:
-            return "terminal"
         }
     }
 

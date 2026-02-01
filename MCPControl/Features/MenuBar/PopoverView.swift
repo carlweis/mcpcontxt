@@ -1,6 +1,6 @@
 //
 //  PopoverView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Main popover content showing server list and quick actions
 //

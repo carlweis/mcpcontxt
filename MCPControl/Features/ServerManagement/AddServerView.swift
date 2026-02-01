@@ -1,6 +1,6 @@
 //
 //  AddServerView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Add or edit an MCP server
 //

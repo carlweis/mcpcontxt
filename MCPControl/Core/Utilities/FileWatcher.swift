@@ -1,6 +1,6 @@
 //
 //  FileWatcher.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: File watching removed in simplified architecture
 //  This stub exists to prevent build errors from any remaining references

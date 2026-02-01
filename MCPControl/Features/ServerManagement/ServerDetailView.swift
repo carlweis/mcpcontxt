@@ -1,6 +1,6 @@
 //
 //  ServerDetailView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Detailed view of a server configuration
 //

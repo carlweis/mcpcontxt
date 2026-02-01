@@ -1,6 +1,6 @@
 //
 //  HealthMonitor.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: Health monitoring removed in simplified architecture
 //  This stub exists to prevent build errors from any remaining references

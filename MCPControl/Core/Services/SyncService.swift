@@ -1,6 +1,6 @@
 //
 //  SyncService.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: Sync service removed in simplified architecture
 //  Servers are now written directly to ~/.claude.json via ClaudeConfigService

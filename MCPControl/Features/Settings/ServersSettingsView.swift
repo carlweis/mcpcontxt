@@ -1,6 +1,6 @@
 //
 //  ServersSettingsView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Servers settings tab - full server management
 //

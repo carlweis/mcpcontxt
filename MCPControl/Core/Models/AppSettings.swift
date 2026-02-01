@@ -1,6 +1,6 @@
 //
 //  AppSettings.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Application settings and preferences
 //

@@ -1,6 +1,6 @@
 //
 //  ClaudeConfigService.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Simple read/write for ~/.claude.json MCP servers
 //  Uses JSONSerialization to handle complex file without failing

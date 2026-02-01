@@ -1,6 +1,6 @@
 //
 //  ClaudeDesktopConfig.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: Claude Desktop uses Connectors, not MCP config files
 //  This stub exists to prevent build errors from any remaining references

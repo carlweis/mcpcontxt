@@ -1,6 +1,6 @@
 //
 //  ServerRegistry.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Manages MCP servers from ~/.claude.json
 //  Source of truth for the UI - reads/writes directly to Claude config

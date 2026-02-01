@@ -1,6 +1,6 @@
 //
 //  ServerListView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Full server list view for settings
 //

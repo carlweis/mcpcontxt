@@ -1,6 +1,6 @@
 //
 //  BrowseServersView.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Browse and add MCP servers from the static catalog
 //
@@ -125,15 +125,8 @@ struct BrowseServersView: View {
 
     private func serverCard(_ server: MCPCatalogServer) -> some View {
         HStack(alignment: .top, spacing: 12) {
-            // Icon
-            VStack {
-                Image(systemName: serverIcon(for: server))
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
-                    .frame(width: 40, height: 40)
-                    .background(Color.accentColor.opacity(0.1))
-                    .cornerRadius(8)
-            }
+            // Icon (fetched favicon or fallback SF Symbol)
+            ServerIconView(catalogServer: server, size: 40)
 
             // Info
             VStack(alignment: .leading, spacing: 4) {
@@ -180,27 +173,6 @@ struct BrowseServersView: View {
         .padding()
         .background(Color(NSColor.controlBackgroundColor))
         .cornerRadius(8)
-    }
-
-    private func serverIcon(for server: MCPCatalogServer) -> String {
-        let name = server.id.lowercased()
-
-        if name.contains("github") { return "chevron.left.forwardslash.chevron.right" }
-        if name.contains("slack") { return "bubble.left.and.bubble.right" }
-        if name.contains("notion") { return "doc.text" }
-        if name.contains("linear") { return "list.bullet.rectangle" }
-        if name.contains("figma") { return "paintpalette" }
-        if name.contains("sentry") { return "exclamationmark.triangle" }
-        if name.contains("postgres") || name.contains("database") || name.contains("sql") || name.contains("bigquery") { return "cylinder" }
-        if name.contains("google") { return "g.circle" }
-        if name.contains("jira") || name.contains("atlassian") { return "checklist" }
-        if name.contains("asana") { return "list.bullet.clipboard" }
-        if name.contains("stripe") || name.contains("paypal") || name.contains("mercury") || name.contains("ramp") { return "creditcard" }
-        if name.contains("hubspot") || name.contains("close") { return "person.2" }
-        if name.contains("vercel") || name.contains("netlify") || name.contains("cloudflare") { return "cloud" }
-        if name.contains("supabase") || name.contains("motherduck") { return "cylinder" }
-
-        return "server.rack"
     }
 
     private var footer: some View {

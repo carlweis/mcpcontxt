@@ -1,6 +1,6 @@
 //
 //  ConfigurationManager.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  DEPRECATED: Configuration manager removed in simplified architecture
 //  Use ClaudeConfigService directly for ~/.claude.json operations

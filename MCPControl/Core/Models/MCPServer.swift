@@ -1,6 +1,6 @@
 //
 //  MCPServer.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Core server definition - our source of truth for MCP server configurations
 //

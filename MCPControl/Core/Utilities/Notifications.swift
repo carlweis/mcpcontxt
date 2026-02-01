@@ -1,6 +1,6 @@
 //
 //  Notifications.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  User notifications for server status changes
 //

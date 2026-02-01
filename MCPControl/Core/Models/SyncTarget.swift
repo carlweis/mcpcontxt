@@ -1,6 +1,6 @@
 //
 //  SyncTarget.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Defines the targets where MCP configurations can be synced
 //

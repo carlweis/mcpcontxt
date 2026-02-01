@@ -1,6 +1,6 @@
 //
 //  PreviewData.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Sample data for SwiftUI previews
 //

@@ -1,6 +1,6 @@
 //
 //  ProcessMonitor.swift
-//  MCP Contxt
+//  MCPControl
 //
 //  Monitor and control Claude Desktop process
 //
