@@ -34,11 +34,11 @@ struct ServerIconView: View {
     private var fallbackView: some View {
         ZStack {
             RoundedRectangle(cornerRadius: size * 0.2)
-                .fill(Color.accentColor.opacity(0.1))
+                .fill(Color.primary.opacity(0.08))
 
             Image(systemName: fallbackIcon)
                 .font(.system(size: size * 0.5))
-                .foregroundColor(.accentColor)
+                .foregroundColor(.secondary)
         }
     }
 

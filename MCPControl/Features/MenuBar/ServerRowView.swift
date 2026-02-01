@@ -66,7 +66,7 @@ struct ServerRowView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(isHovering ? Color.accentColor.opacity(0.1) : Color.clear)
+            .background(isHovering ? Color.primary.opacity(0.08) : Color.clear)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

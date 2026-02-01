@@ -161,7 +161,7 @@ struct ServerDetailView: View {
 
                     HStack(spacing: 4) {
                         Image(systemName: "info.circle")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.secondary)
                         Text("Just start using the server in Claude Code to authenticate.")
                             .font(.caption)
                             .foregroundColor(.secondary)
