@@ -81,7 +81,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false
             )
-            settingsWindow?.title = "MCP Control Settings"
+            settingsWindow?.title = "MCP Contxt Settings"
             settingsWindow?.contentView = NSHostingView(rootView: settingsView)
             settingsWindow?.center()
             settingsWindow?.isReleasedWhenClosed = false

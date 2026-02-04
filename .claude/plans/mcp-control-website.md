@@ -1,4 +1,4 @@
-# MCP Control Website - Laravel 12 + Inertia + React
+# MCP Contxt Website - Laravel 12 + Inertia + React
 
 ## Project Info
 
@@ -8,7 +8,7 @@
 
 ## Summary
 
-A simple marketing website for MCP Control with:
+A simple marketing website for MCP Contxt with:
 - Coming soon landing page → Download page (post-launch)
 - Email waitlist collection
 - Download tracking
@@ -75,14 +75,14 @@ Schema::create('downloads', function (Blueprint $table) {
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Navigation                                                 │
-│  [Logo] MCP Control                            [GitHub]     │
+│  [Logo] MCP Contxt                            [GitHub]     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  Hero                                                       │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │  [App Icon]                                          │   │
 │  │                                                      │   │
-│  │  MCP Control                                         │   │
+│  │  MCP Contxt                                         │   │
 │  │  The missing management interface for                │   │
 │  │  MCP servers in Claude Code                          │   │
 │  │                                                      │   │
@@ -301,12 +301,12 @@ export default function Home({ launched, version }: Props) {
 
   return (
     <>
-      <Head title="MCP Control - Manage MCP Servers for Claude" />
+      <Head title="MCP Contxt - Manage MCP Servers for Claude" />
 
       {/* Hero */}
       <section className="py-20 text-center">
-        <img src="/images/app-icon.png" alt="MCP Control" className="w-24 h-24 mx-auto mb-8" />
-        <h1 className="text-5xl font-bold mb-6">MCP Control</h1>
+        <img src="/images/app-icon.png" alt="MCP Contxt" className="w-24 h-24 mx-auto mb-8" />
+        <h1 className="text-5xl font-bold mb-6">MCP Contxt</h1>
         <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
           The missing management interface for MCP servers in Claude Code
         </p>

@@ -1,6 +1,6 @@
 //
 //  GeneralSettingsView.swift
-//  MCP Control
+//  MCP Contxt
 //
 //  General settings tab
 //
@@ -16,7 +16,7 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Section("Behavior") {
-                Toggle("Launch MCP Control at login", isOn: $launchAtLogin)
+                Toggle("Launch MCP Contxt at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         setLaunchAtLogin(newValue)
                     }
@@ -27,9 +27,9 @@ struct GeneralSettingsView: View {
                     }
             }
 
-            Section("About MCP Control") {
+            Section("About MCP Contxt") {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("MCP Control makes it easy to add MCP servers to Claude Code.")
+                    Text("MCP Contxt makes it easy to add MCP servers to Claude Code.")
                         .font(.caption)
                         .foregroundColor(.secondary)
 

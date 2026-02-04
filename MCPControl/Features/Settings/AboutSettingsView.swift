@@ -22,7 +22,7 @@ struct AboutSettingsView: View {
                     .frame(width: 80, height: 80)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                Text("MCP Control")
+                Text("MCP Contxt")
                     .font(.title)
                     .fontWeight(.semibold)
 

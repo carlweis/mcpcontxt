@@ -3,12 +3,14 @@ set -e
 
 # Load environment variables from .env if it exists
 if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+    set -a
+    source .env
+    set +a
 fi
 
 # Build configuration
-APP_NAME="MCPControl"
-SCHEME="MCPControl"
+APP_NAME="MCP Contxt"
+SCHEME="MCPControl"  # Xcode scheme name (internal)
 VERSION="1.0.0"
 BUILD_DIR="build"
 DIST_DIR="dist"

@@ -45,7 +45,7 @@ struct PopoverView: View {
 
     private var header: some View {
         HStack {
-            Text("MCP Control")
+            Text("MCP Contxt")
                 .font(.headline)
 
             Spacer()
@@ -158,7 +158,7 @@ struct PopoverView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-            .help("Quit MCP Control")
+            .help("Quit MCP Contxt")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

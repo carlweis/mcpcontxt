@@ -1,8 +1,8 @@
-# MCP Control
+# MCP Contxt
 
 **The missing management interface for MCP servers in Claude Code.**
 
-MCP Control is a native macOS menu bar app that makes it easy to discover, install, and manage [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers for Claude Code and Claude Desktop.
+MCP Contxt is a native macOS menu bar app that makes it easy to discover, install, and manage [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers for Claude Code and Claude Desktop.
 
 **Website:** [mcpcontxt.com](https://mcpcontxt.com)
 
@@ -17,7 +17,7 @@ The Model Context Protocol (MCP) allows Claude to securely connect to external t
 - Interact with your CRM (HubSpot, Salesforce)
 - Connect to hundreds of other services
 
-**The problem:** Managing MCP servers currently requires manually editing JSON configuration files. MCP Control provides a visual interface to browse, install, and manage these connections.
+**The problem:** Managing MCP servers currently requires manually editing JSON configuration files. MCP Contxt provides a visual interface to browse, install, and manage these connections.
 
 ---
 
@@ -42,11 +42,11 @@ Changes sync directly to your Claude Code configuration. No restart required.
 ### Download
 1. Download the latest release from [mcpcontxt.com](https://mcpcontxt.com) or the [GitHub Releases](https://github.com/carlweis/mcpcontxt/releases) page
 2. Open the DMG file
-3. Drag **MCP Control** to your Applications folder
-4. Launch MCP Control from Applications
+3. Drag **MCP Contxt** to your Applications folder
+4. Launch MCP Contxt from Applications
 
 ### First Launch
-On first launch, you may see a security prompt. Click **Open** to allow the app to run. MCP Control needs access to your home directory to read and write the Claude Code configuration file (`~/.claude.json`).
+On first launch, you may see a security prompt. Click **Open** to allow the app to run. MCP Contxt needs access to your home directory to read and write the Claude Code configuration file (`~/.claude.json`).
 
 ---
 
@@ -54,7 +54,7 @@ On first launch, you may see a security prompt. Click **Open** to allow the app 
 
 ### Step 1: Browse Available Servers
 
-1. Click the **MCP Control icon** in your menu bar
+1. Click the **MCP Contxt icon** in your menu bar
 2. Click the **Browse** button
 3. Search or scroll through available servers
 4. Click **Add** to install a server, or **Configure** for servers that need credentials
@@ -101,10 +101,10 @@ If you have servers configured in Claude Desktop, you can import them:
 
 ## How It Works
 
-MCP Control manages the Claude Code configuration file located at `~/.claude.json`. When you add or remove servers through the app, it updates this file directly.
+MCP Contxt manages the Claude Code configuration file located at `~/.claude.json`. When you add or remove servers through the app, it updates this file directly.
 
 ```
-You ─── MCP Control ─── ~/.claude.json ─── Claude Code
+You ─── MCP Contxt ─── ~/.claude.json ─── Claude Code
               │
               └── Server Catalog (GitHub)
 ```
@@ -127,7 +127,7 @@ Servers marked "stdio" run locally on your machine and may need API keys or cred
 - No data is sent to external servers (except fetching the server catalog)
 
 ### Can I still edit the config file manually?
-Yes. MCP Control reads from `~/.claude.json` on launch. Manual changes will appear in the app after refreshing.
+Yes. MCP Contxt reads from `~/.claude.json` on launch. Manual changes will appear in the app after refreshing.
 
 ---
 

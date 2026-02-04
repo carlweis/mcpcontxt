@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate MCP Control app icon
+Generate MCP Contxt app icon
 Premium dark style with gradient M - Laravel aesthetic
 """
 
@@ -196,7 +196,7 @@ def update_contents_json(output_dir):
     print("  Updated Contents.json")
 
 def main():
-    print("Generating MCP Control app icon...")
+    print("Generating MCP Contxt app icon...")
 
     # Generate the base icon at 1024x1024
     icon = create_icon(1024)

@@ -1,8 +1,8 @@
-# MCP Control - Intro Video Script
+# MCP Contxt - Intro Video Script
 
 ## Overview
 
-A 3-5 minute walkthrough video demonstrating MCP Control's core functionality. The video will show adding MCP servers (Linear, Notion, GoDaddy), authenticating them in Claude Code, and using them together in a real workflow: brainstorming domain names with Claude, checking availability via GoDaddy, and creating a follow-up ticket in Linear.
+A 3-5 minute walkthrough video demonstrating MCP Contxt's core functionality. The video will show adding MCP servers (Linear, Notion, GoDaddy), authenticating them in Claude Code, and using them together in a real workflow: brainstorming domain names with Claude, checking availability via GoDaddy, and creating a follow-up ticket in Linear.
 
 **Target audience:** Developers and non-technical users who want to connect Claude to external tools.
 
@@ -19,15 +19,15 @@ A 3-5 minute walkthrough video demonstrating MCP Control's core functionality. T
 
 **[Screen: Desktop with menu bar visible]**
 
-> "Managing MCP servers for Claude Code usually means editing JSON config files. MCP Control makes it simple - browse, add, and manage your servers from a clean interface. Let me show you how it works."
+> "Managing MCP servers for Claude Code usually means editing JSON config files. MCP Contxt makes it simple - browse, add, and manage your servers from a clean interface. Let me show you how it works."
 
 ---
 
 ### Part 1: Installing MCP Servers (0:15 - 1:30)
 
-**[Action: Click MCP Control icon in menu bar]**
+**[Action: Click MCP Contxt icon in menu bar]**
 
-> "MCP Control lives in your menu bar. Click to see your configured servers - right now I don't have any."
+> "MCP Contxt lives in your menu bar. Click to see your configured servers - right now I don't have any."
 
 **[Action: Click "Browse" button]**
 
@@ -129,13 +129,13 @@ A 3-5 minute walkthrough video demonstrating MCP Control's core functionality. T
 
 ### Closing (4:00 - 4:30)
 
-**[Action: Click MCP Control icon, show servers]**
+**[Action: Click MCP Contxt icon, show servers]**
 
-> "MCP Control makes it easy to manage which tools Claude can access. Add servers in seconds, authenticate once, and let Claude handle the rest."
+> "MCP Contxt makes it easy to manage which tools Claude can access. Add servers in seconds, authenticate once, and let Claude handle the rest."
 
 **[Screen: Show mcpcontxt.com or GitHub]**
 
-> "Download MCP Control for free at mcpcontxt.com, or find it on GitHub. Links in the description."
+> "Download MCP Contxt for free at mcpcontxt.com, or find it on GitHub. Links in the description."
 
 **[End card with links]**
 
@@ -187,7 +187,7 @@ If the GoDaddy → Linear flow doesn't work smoothly, alternatives:
 
 ## Pre-Recording Checklist
 
-- [ ] MCP Control installed and working
+- [ ] MCP Contxt installed and working
 - [ ] Clean Linear workspace with "Side Projects" project
 - [ ] Notion connected with some test content
 - [ ] GoDaddy server working (test domain lookup)

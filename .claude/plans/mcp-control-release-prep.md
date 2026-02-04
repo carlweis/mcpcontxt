@@ -1,4 +1,4 @@
-# MCP Control - Release Preparation Plan
+# MCP Contxt - Release Preparation Plan
 
 ## Project Info
 
@@ -124,7 +124,7 @@ echo "Done! DMG ready at: $DIST_DIR/$APP_NAME-$VERSION.dmg"
 
 **Note**: You'll need an app-specific password for notarization:
 1. Go to appleid.apple.com → Sign-In and Security → App-Specific Passwords
-2. Generate a new password for "MCP Control Notarization"
+2. Generate a new password for "MCP Contxt Notarization"
 3. Use this password in the script (or set `APP_PASSWORD` env var)
 
 **Dependencies to install** (document in README):

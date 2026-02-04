@@ -2,7 +2,7 @@
 
 # Default target
 help:
-	@echo "MCP Control Build Commands"
+	@echo "MCP Contxt Build Commands"
 	@echo ""
 	@echo "  make build    - Build debug configuration"
 	@echo "  make release  - Build release configuration"
