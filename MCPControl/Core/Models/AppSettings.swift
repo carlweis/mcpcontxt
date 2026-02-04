@@ -21,7 +21,7 @@ struct AppSettings: Codable {
         syncTargets: Set<SyncTarget> = [.claudeDesktop, .claudeCodeUser],
         autoSyncOnChanges: Bool = true,
         launchAtLogin: Bool = false,
-        showInDock: Bool = false,
+        showInDock: Bool = true,
         healthCheckInterval: TimeInterval = 30,
         showNotificationOnFailure: Bool = true,
         showNotificationOnAuthExpiry: Bool = true,

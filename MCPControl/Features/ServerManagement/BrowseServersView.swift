@@ -90,6 +90,12 @@ struct BrowseServersView: View {
                 await catalogService.refresh()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .serverRemoved)) { notification in
+            // When a server is removed, update our local tracking
+            if let serverName = notification.object as? String {
+                addedServers.remove(serverName)
+            }
+        }
     }
 
     private var loadingState: some View {
@@ -222,51 +228,71 @@ struct BrowseServersView: View {
     }
 
     private func serverCard(_ server: MCPCatalogServer) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Icon (fetched favicon or fallback SF Symbol)
-            ServerIconView(catalogServer: server, size: 40)
+        let isInstalled = isServerInstalled(server)
 
-            // Info
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(server.name)
-                        .font(.headline)
+        return HStack(alignment: .top, spacing: 12) {
+            // Icon + Info - clickable area for installed servers
+            HStack(alignment: .top, spacing: 12) {
+                // Icon (fetched favicon or fallback SF Symbol)
+                ServerIconView(catalogServer: server, size: 40)
 
-                    Text(server.transport.rawValue.uppercased())
-                        .font(.caption2)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(server.isStdio ? Color.purple.opacity(0.2) : Color.secondary.opacity(0.2))
-                        .cornerRadius(4)
-                }
+                // Info
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(server.name)
+                            .font(.headline)
 
-                Text(server.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-
-                // Show URL for remote servers, command for stdio
-                if let url = server.url {
-                    Text(url)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                } else if let command = server.command, let args = server.args {
-                    Text("\(command) \(args.joined(separator: " "))")
-                        .font(.system(.caption2, design: .monospaced))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-
-                // Show required env vars for stdio servers
-                if server.isStdio, let envVars = server.env, !envVars.isEmpty {
-                    HStack(spacing: 4) {
-                        Image(systemName: "key")
+                        Text(server.transport.rawValue.uppercased())
                             .font(.caption2)
-                        Text("Requires: \(envVars.joined(separator: ", "))")
-                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(server.isStdio ? Color.purple.opacity(0.2) : Color.secondary.opacity(0.2))
+                            .cornerRadius(4)
                     }
-                    .foregroundColor(.orange)
+
+                    Text(server.description)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+
+                    // Show URL for remote servers, command for stdio
+                    if let url = server.url {
+                        Text(url)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    } else if let command = server.command, let args = server.args {
+                        Text("\(command) \(args.joined(separator: " "))")
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+
+                    // Show required env vars for stdio servers
+                    if server.isStdio, let envVars = server.env, !envVars.isEmpty {
+                        HStack(spacing: 4) {
+                            Image(systemName: "key")
+                                .font(.caption2)
+                            Text("Requires: \(envVars.joined(separator: ", "))")
+                                .font(.caption2)
+                        }
+                        .foregroundColor(.orange)
+                    }
+                }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if isInstalled, let installedServer = registry.server(withName: server.id) {
+                    NotificationCenter.default.post(name: .openServerDetail, object: installedServer)
+                }
+            }
+            .onHover { hovering in
+                if isInstalled {
+                    if hovering {
+                        NSCursor.pointingHand.push()
+                    } else {
+                        NSCursor.pop()
+                    }
                 }
             }
 
@@ -274,7 +300,7 @@ struct BrowseServersView: View {
 
             // Actions
             VStack(spacing: 8) {
-                if addedServers.contains(server.id) || registry.server(withName: server.id) != nil {
+                if isInstalled {
                     Label("Added", systemImage: "checkmark.circle.fill")
                         .font(.caption)
                         .foregroundColor(.green)

@@ -280,12 +280,15 @@ struct ServerDetailView: View {
     }
 
     private func removeServer() {
-        print("[ServerDetailView] Removing server: \(server.name)")
+        let serverName = server.name
+        print("[ServerDetailView] Removing server: \(serverName)")
         Task {
             do {
                 try await registry.remove(server)
                 print("[ServerDetailView] Server removed successfully")
                 await MainActor.run {
+                    // Notify other views that a server was removed
+                    NotificationCenter.default.post(name: .serverRemoved, object: serverName)
                     dismiss()
                 }
             } catch {

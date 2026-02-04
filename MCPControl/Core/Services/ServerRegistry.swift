@@ -10,7 +10,6 @@ import Foundation
 import Combine
 import SwiftUI
 
-@MainActor
 class ServerRegistry: ObservableObject {
     static let shared = ServerRegistry()
 
@@ -22,10 +21,12 @@ class ServerRegistry: ObservableObject {
 
     // MARK: - Load from ~/.claude.json
 
+    @MainActor
     func load() async {
         await loadFromClaudeConfig()
     }
 
+    @MainActor
     func loadFromClaudeConfig() async {
         print("[ServerRegistry] Starting load from ~/.claude.json")
         isLoading = true
@@ -64,6 +65,7 @@ class ServerRegistry: ObservableObject {
 
     // MARK: - Add/Remove Servers
 
+    @MainActor
     func add(_ server: MCPServer) async throws {
         let config = MCPServerConfig(
             type: server.type.rawValue,
@@ -78,11 +80,13 @@ class ServerRegistry: ObservableObject {
         await loadFromClaudeConfig()
     }
 
+    @MainActor
     func remove(_ server: MCPServer) async throws {
         try ClaudeConfigService.shared.removeServer(name: server.name)
         await loadFromClaudeConfig()
     }
 
+    @MainActor
     func remove(at offsets: IndexSet) async throws {
         let serversToRemove = offsets.map { servers[$0] }
         for server in serversToRemove {
@@ -113,6 +117,7 @@ class ServerRegistry: ObservableObject {
 
     // MARK: - Refresh
 
+    @MainActor
     func refresh() async {
         await loadFromClaudeConfig()
     }

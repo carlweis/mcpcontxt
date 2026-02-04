@@ -9,6 +9,7 @@ import SwiftUI
 import AppKit
 import Combine
 
+@MainActor
 class MenuBarController: NSObject, ObservableObject {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
@@ -127,7 +128,7 @@ class MenuBarController: NSObject, ObservableObject {
     }
 
     @objc private func refreshServers() {
-        Task { @MainActor in
+        Task {
             await registry.loadFromClaudeConfig()
         }
     }
@@ -150,7 +151,7 @@ class MenuBarController: NSObject, ObservableObject {
         let imageName = hasServers ? "circle.fill" : "circle"
         let tintColor: NSColor = hasServers ? .systemGreen : .secondaryLabelColor
 
-        if let image = NSImage(systemSymbolName: imageName, accessibilityDescription: "MCP Control") {
+        if let image = NSImage(systemSymbolName: imageName, accessibilityDescription: "MCP Contxt") {
             let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
             let configuredImage = image.withSymbolConfiguration(config)
             button.image = configuredImage
@@ -159,6 +160,6 @@ class MenuBarController: NSObject, ObservableObject {
 
         let serverCount = registry.servers.count
         let statusText = serverCount == 0 ? "No servers" : "\(serverCount) server\(serverCount == 1 ? "" : "s")"
-        button.toolTip = "MCP Control - \(statusText)"
+        button.toolTip = "MCP Contxt - \(statusText)"
     }
 }

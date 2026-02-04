@@ -15,7 +15,6 @@ enum MCPConnectionStatus: String {
     case failed
 }
 
-@MainActor
 class MCPStatusChecker: ObservableObject {
     static let shared = MCPStatusChecker()
 

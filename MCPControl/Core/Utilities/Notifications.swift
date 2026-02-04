@@ -17,6 +17,7 @@ extension Notification.Name {
     static let openBrowse = Notification.Name("openBrowse")
     static let openServerDetail = Notification.Name("openServerDetail")
     static let openStdioServerConfig = Notification.Name("openStdioServerConfig")
+    static let serverRemoved = Notification.Name("serverRemoved")
 }
 
 class NotificationService {
@@ -174,7 +175,6 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        let identifier = response.notification.request.identifier
         let serverName = response.notification.request.content.subtitle
 
         switch response.actionIdentifier {

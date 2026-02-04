@@ -32,7 +32,7 @@ struct ServerIconView: View {
         .onAppear {
             loadIcon()
         }
-        .onChange(of: faviconService.icons[serverId]) { newIcon in
+        .onChange(of: faviconService.icons[serverId]) { _, newIcon in
             currentIcon = newIcon
         }
     }

@@ -1,0 +1,30 @@
+# Environment variables (contains credentials)
+.env
+
+# Build directories
+build/
+DerivedData/
+
+# Xcode
+*.xcuserstate
+*.xcscmblueprint
+xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Distribution (keep .gitkeep)
+dist/*.dmg
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# Python virtual environment
+.venv/

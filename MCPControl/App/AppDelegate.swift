@@ -146,6 +146,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let detailView = ServerDetailView(server: server, onDismiss: { [weak self] in
             self?.serverDetailWindow?.close()
         })
+        .environmentObject(ServerRegistry.shared)
 
         if serverDetailWindow == nil {
             serverDetailWindow = NSWindow(
@@ -165,12 +166,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func openBrowse() {
-        if browseWindow == nil {
-            let browseView = BrowseServersView(onDismiss: { [weak self] in
-                self?.browseWindow?.close()
-            })
-            .environmentObject(ServerRegistry.shared)
+        // Always create fresh view to ensure catalog refresh
+        let browseView = BrowseServersView(onDismiss: { [weak self] in
+            self?.browseWindow?.close()
+        })
+        .environmentObject(ServerRegistry.shared)
 
+        if browseWindow == nil {
             browseWindow = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 600, height: 550),
                 styleMask: [.titled, .closable],
@@ -178,11 +180,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 defer: false
             )
             browseWindow?.title = "Browse MCP Servers"
-            browseWindow?.contentView = NSHostingView(rootView: browseView)
             browseWindow?.center()
             browseWindow?.isReleasedWhenClosed = false
         }
 
+        browseWindow?.contentView = NSHostingView(rootView: browseView)
         browseWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

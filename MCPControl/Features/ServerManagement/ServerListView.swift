@@ -100,10 +100,19 @@ struct ServerListView: View {
     private var serverTable: some View {
         Table(filteredServers, selection: $selectedServerID) {
             TableColumn("Name") { server in
-                Text(server.name)
-                    .font(.system(.body, design: .monospaced))
+                HStack(spacing: 8) {
+                    ServerIconView(
+                        serverId: server.name,
+                        serverURL: server.configuration.url,
+                        serverType: server.type,
+                        size: 20
+                    )
+
+                    Text(server.name)
+                        .font(.system(.body, design: .monospaced))
+                }
             }
-            .width(min: 100, ideal: 150)
+            .width(min: 120, ideal: 170)
 
             TableColumn("Type") { server in
                 Text(server.type.displayName)

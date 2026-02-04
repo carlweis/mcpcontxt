@@ -12,7 +12,7 @@ struct AboutSettingsView: View {
     private let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 20) {
             Spacer()
 
             // App icon and name
@@ -20,6 +20,7 @@ struct AboutSettingsView: View {
                 Image(nsImage: NSApp.applicationIconImage)
                     .resizable()
                     .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
 
                 Text("MCP Control")
                     .font(.title)
@@ -31,7 +32,7 @@ struct AboutSettingsView: View {
             }
 
             // Description
-            Text("A menu bar app for managing MCP servers\nfor Claude Code CLI")
+            Text("Browse, install, and manage MCP servers\nfor Claude Code")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -39,54 +40,40 @@ struct AboutSettingsView: View {
             Divider()
                 .frame(width: 200)
 
-            // Branding
-            VStack(spacing: 8) {
-                Text("Built by")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-
-                Button(action: openOpcodezero) {
-                    HStack(spacing: 6) {
-                        Text("opcodezero")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                    }
-                }
-                .buttonStyle(.link)
-            }
-
             // Links
-            HStack(spacing: 20) {
-                Button("Website") {
-                    openURL("https://opcodezero.com")
+            HStack(spacing: 24) {
+                Button(action: { openURL("https://mcpcontxt.com") }) {
+                    Label("Website", systemImage: "globe")
                 }
                 .buttonStyle(.link)
 
-                Button("GitHub") {
-                    openURL("https://github.com/opcodezerohq/mcp-control")
+                Button(action: { openURL("https://github.com/carlweis/mcpcontxt") }) {
+                    Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                 }
                 .buttonStyle(.link)
 
-                Button("Report Issue") {
-                    openURL("https://github.com/opcodezerohq/mcp-control/issues")
+                Button(action: { openURL("https://github.com/carlweis/mcpcontxt/issues") }) {
+                    Label("Report Issue", systemImage: "exclamationmark.bubble")
                 }
                 .buttonStyle(.link)
             }
-            .font(.caption)
+            .font(.callout)
 
             Spacer()
 
-            // Copyright
-            Text("© 2026 opcodezero LLC. All rights reserved.")
-                .font(.caption2)
-                .foregroundColor(.secondary)
+            // Open source notice
+            VStack(spacing: 4) {
+                Text("Free & Open Source")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Text("MIT License")
+                    .font(.caption2)
+                    .foregroundColor(.secondary.opacity(0.7))
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func openOpcodezero() {
-        openURL("https://opcodezero.com")
     }
 
     private func openURL(_ urlString: String) {

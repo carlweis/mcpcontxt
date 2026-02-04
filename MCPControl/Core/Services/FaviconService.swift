@@ -9,7 +9,6 @@ import Foundation
 import AppKit
 import Combine
 
-@MainActor
 class FaviconService: ObservableObject {
     static let shared = FaviconService()
 

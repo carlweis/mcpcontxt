@@ -16,8 +16,8 @@ class MCPCatalogService: ObservableObject {
     @Published private(set) var lastError: Error?
     @Published private(set) var lastUpdated: Date?
 
-    // Remote catalog URL - hosted on opcodezero GitHub
-    private let remoteURL = URL(string: "https://raw.githubusercontent.com/opcodezerohq/mcp-control/main/mcp-servers.json")!
+    // Remote catalog URL - hosted on GitHub
+    private let remoteURL = URL(string: "https://raw.githubusercontent.com/carlweis/mcpcontxt/main/mcp-servers.json")!
 
     private let cacheURL: URL
     private let fileManager = FileManager.default
