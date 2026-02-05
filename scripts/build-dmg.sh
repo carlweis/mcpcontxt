@@ -10,7 +10,7 @@ fi
 
 # Build configuration
 APP_NAME="MCP Contxt"
-SCHEME="MCPControl"  # Xcode scheme name (internal)
+SCHEME="MCPContxt"  # Xcode scheme name (internal)
 VERSION="1.0.0"
 BUILD_DIR="build"
 DIST_DIR="dist"

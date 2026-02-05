@@ -204,7 +204,7 @@ def main():
     # Output to the Assets.xcassets directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.dirname(script_dir)
-    output_dir = os.path.join(project_dir, "MCPControl", "Assets.xcassets", "AppIcon.appiconset")
+    output_dir = os.path.join(project_dir, "MCPContxt", "Assets.xcassets", "AppIcon.appiconset")
 
     print(f"Output directory: {output_dir}")
 

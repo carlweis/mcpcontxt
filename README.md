@@ -40,7 +40,7 @@ Changes sync directly to your Claude Code configuration. No restart required.
 ## Installation
 
 ### Download
-1. Download the latest release from [mcpcontxt.com](https://mcpcontxt.com) or the [GitHub Releases](https://github.com/carlweis/mcpcontxt/releases) page
+1. Download the latest release from [mcpcontxt.com](https://mcpcontxt.com) or the [GitHub Releases](https://github.com/opcodezerohq/mcpcontxt/releases) page
 2. Open the DMG file
 3. Drag **MCP Contxt** to your Applications folder
 4. Launch MCP Contxt from Applications
@@ -123,7 +123,7 @@ Servers marked "stdio" run locally on your machine and may need API keys or cred
 
 ### Where is my data stored?
 - Server configuration: `~/.claude.json`
-- App preferences: `~/Library/Application Support/MCPControl/`
+- App preferences: `~/Library/Application Support/MCPContxt/`
 - No data is sent to external servers (except fetching the server catalog)
 
 ### Can I still edit the config file manually?
@@ -158,11 +158,11 @@ For developers interested in contributing:
 
 ```bash
 # Clone the repository
-git clone https://github.com/carlweis/mcpcontxt.git
+git clone https://github.com/opcodezerohq/mcpcontxt.git
 cd mcpcontxt
 
 # Open in Xcode
-open MCPControl.xcodeproj
+open MCPContxt.xcodeproj
 
 # Or build from command line
 make build      # Debug build
@@ -173,7 +173,7 @@ make dmg        # Create distributable DMG
 ### Project Structure
 
 ```
-MCPControl/
+MCPContxt/
 ├── App/                    # App delegate, menu bar setup
 ├── Features/
 │   ├── MenuBar/           # Popover and server list
@@ -202,7 +202,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/carlweis/mcpcontxt/issues)
+- **Issues:** [GitHub Issues](https://github.com/opcodezerohq/mcpcontxt/issues)
 - **Website:** [mcpcontxt.com](https://mcpcontxt.com)
 
 ---

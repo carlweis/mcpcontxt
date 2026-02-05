@@ -13,10 +13,10 @@ help:
 	@echo "  Copy .env.example to .env and fill in your signing credentials"
 
 build:
-	xcodebuild -scheme MCPControl -configuration Debug build
+	xcodebuild -scheme MCPContxt -configuration Debug build
 
 release:
-	xcodebuild -scheme MCPControl -configuration Release build
+	xcodebuild -scheme MCPContxt -configuration Release build
 
 dmg:
 	./scripts/build-dmg.sh
@@ -24,4 +24,4 @@ dmg:
 clean:
 	rm -rf build/
 	rm -rf dist/*.dmg
-	xcodebuild clean -scheme MCPControl 2>/dev/null || true
+	xcodebuild clean -scheme MCPContxt 2>/dev/null || true
