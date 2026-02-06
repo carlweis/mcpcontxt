@@ -240,7 +240,11 @@ struct AddStdioServerView: View {
             command: "uvx",
             args: ["zendesk-mcp-server"],
             env: ["ZENDESK_SUBDOMAIN", "ZENDESK_EMAIL", "ZENDESK_API_KEY"],
-            setupUrl: "https://github.com/reminia/zendesk-mcp-server"
+            setupUrl: "https://github.com/reminia/zendesk-mcp-server",
+            documentationUrl: nil,
+            githubUrl: "https://github.com/reminia/zendesk-mcp-server",
+            requirements: nil,
+            installCommand: nil
         )
     )
     .environmentObject(ServerRegistry.shared)

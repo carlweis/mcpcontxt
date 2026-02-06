@@ -14,6 +14,7 @@ struct ServerListView: View {
     @State private var showingAddServer = false
     @State private var serverToEdit: MCPServer?
     @State private var serverToDelete: MCPServer?
+    @State private var serverToViewDetail: MCPServer?
     @State private var showingDeleteConfirmation = false
     @State private var searchText = ""
 
@@ -47,6 +48,12 @@ struct ServerListView: View {
         .sheet(item: $serverToEdit) { server in
             AddServerView(editingServer: server)
                 .environmentObject(registry)
+        }
+        .sheet(item: $serverToViewDetail) { server in
+            ServerDetailSheet(mode: .installed(server)) {
+                serverToViewDetail = nil
+            }
+            .environmentObject(registry)
         }
         .alert("Delete Server", isPresented: $showingDeleteConfirmation) {
             Button("Cancel", role: .cancel) {}
@@ -141,6 +148,12 @@ struct ServerListView: View {
 
             TableColumn("Actions") { server in
                 HStack(spacing: 8) {
+                    Button(action: { serverToViewDetail = server }) {
+                        Image(systemName: "info.circle")
+                    }
+                    .buttonStyle(.plain)
+                    .help("View Details")
+                    
                     Button(action: { serverToEdit = server }) {
                         Image(systemName: "pencil")
                     }
@@ -158,14 +171,18 @@ struct ServerListView: View {
                     .help("Delete")
                 }
             }
-            .width(70)
+            .width(100)
         }
         .contextMenu(forSelectionType: UUID.self) { selection in
             if let serverID = selection.first,
                let server = registry.server(withID: serverID) {
+                Button("View Details") {
+                    serverToViewDetail = server
+                }
                 Button("Edit") {
                     serverToEdit = server
                 }
+                Divider()
                 Button("Delete", role: .destructive) {
                     serverToDelete = server
                     showingDeleteConfirmation = true
@@ -174,7 +191,7 @@ struct ServerListView: View {
         } primaryAction: { selection in
             if let serverID = selection.first,
                let server = registry.server(withID: serverID) {
-                serverToEdit = server
+                serverToViewDetail = server
             }
         }
     }

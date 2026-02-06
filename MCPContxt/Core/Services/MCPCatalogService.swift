@@ -17,7 +17,7 @@ class MCPCatalogService: ObservableObject {
     @Published private(set) var lastUpdated: Date?
 
     // Remote catalog URL - hosted on GitHub
-    private let remoteURL = URL(string: "https://raw.githubusercontent.com/opcodezerohq/mcpcontxt/main/mcp-servers.json")!
+    private let remoteURL = URL(string: "https://mcpcontxt.com/mcp-servers.json")!
 
     private let cacheURL: URL
     private let fileManager = FileManager.default
@@ -173,7 +173,8 @@ private struct CatalogResponse: Codable {
 
 extension MCPCatalogServer: Codable {
     enum CodingKeys: String, CodingKey {
-        case id, name, description, url, transport, command, args, env, setupUrl
+        case id, name, description, url, transport, command, args, env
+        case setupUrl, documentationUrl, githubUrl, requirements, installCommand
     }
 
     init(from decoder: Decoder) throws {
@@ -191,7 +192,13 @@ extension MCPCatalogServer: Codable {
         command = try container.decodeIfPresent(String.self, forKey: .command)
         args = try container.decodeIfPresent([String].self, forKey: .args)
         env = try container.decodeIfPresent([String].self, forKey: .env)
+        
+        // Metadata fields
         setupUrl = try container.decodeIfPresent(String.self, forKey: .setupUrl)
+        documentationUrl = try container.decodeIfPresent(String.self, forKey: .documentationUrl)
+        githubUrl = try container.decodeIfPresent(String.self, forKey: .githubUrl)
+        requirements = try container.decodeIfPresent([String].self, forKey: .requirements)
+        installCommand = try container.decodeIfPresent(String.self, forKey: .installCommand)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -205,6 +212,10 @@ extension MCPCatalogServer: Codable {
         try container.encodeIfPresent(args, forKey: .args)
         try container.encodeIfPresent(env, forKey: .env)
         try container.encodeIfPresent(setupUrl, forKey: .setupUrl)
+        try container.encodeIfPresent(documentationUrl, forKey: .documentationUrl)
+        try container.encodeIfPresent(githubUrl, forKey: .githubUrl)
+        try container.encodeIfPresent(requirements, forKey: .requirements)
+        try container.encodeIfPresent(installCommand, forKey: .installCommand)
     }
 }
 

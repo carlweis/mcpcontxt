@@ -20,7 +20,13 @@ struct MCPCatalogServer: Identifiable, Hashable {
     let command: String?
     let args: [String]?
     let env: [String]?
+    
+    // Additional metadata
     let setupUrl: String?
+    let documentationUrl: String?
+    let githubUrl: String?
+    let requirements: [String]?
+    let installCommand: String?
 
     enum TransportType: String {
         case http

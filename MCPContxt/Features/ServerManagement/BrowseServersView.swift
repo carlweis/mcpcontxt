@@ -17,6 +17,8 @@ struct BrowseServersView: View {
     @State private var searchText = ""
     @State private var addedServers: Set<String> = []
     @State private var filterOption: FilterOption = .all
+    @State private var selectedServer: MCPCatalogServer?
+    @State private var showingDetailSheet = false
 
     enum FilterOption: String, CaseIterable {
         case all = "All"
@@ -80,10 +82,20 @@ struct BrowseServersView: View {
             footer
         }
         .frame(width: 600, height: 550)
+        .sheet(isPresented: $showingDetailSheet) {
+            if let server = selectedServer {
+                ServerDetailSheet(mode: .catalog(server)) {
+                    showingDetailSheet = false
+                    selectedServer = nil
+                    // Refresh installed status
+                    checkInstalledServers()
+                }
+                .environmentObject(registry)
+            }
+        }
         .onAppear {
             // Mark already-added servers
-            let existingNames = Set(registry.servers.map { $0.name })
-            addedServers = existingNames
+            checkInstalledServers()
 
             // Refresh catalog on appear
             Task {
@@ -96,6 +108,11 @@ struct BrowseServersView: View {
                 addedServers.remove(serverName)
             }
         }
+    }
+    
+    private func checkInstalledServers() {
+        let existingNames = Set(registry.servers.map { $0.name })
+        addedServers = existingNames
     }
 
     private var loadingState: some View {
@@ -231,7 +248,7 @@ struct BrowseServersView: View {
         let isInstalled = isServerInstalled(server)
 
         return HStack(alignment: .top, spacing: 12) {
-            // Icon + Info - clickable area for installed servers
+            // Icon + Info - clickable for ALL servers now
             HStack(alignment: .top, spacing: 12) {
                 // Icon (fetched favicon or fallback SF Symbol)
                 ServerIconView(catalogServer: server, size: 40)
@@ -282,17 +299,15 @@ struct BrowseServersView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture {
-                if isInstalled, let installedServer = registry.server(withName: server.id) {
-                    NotificationCenter.default.post(name: .openServerDetail, object: installedServer)
-                }
+                // Open detail sheet for ANY server
+                selectedServer = server
+                showingDetailSheet = true
             }
             .onHover { hovering in
-                if isInstalled {
-                    if hovering {
-                        NSCursor.pointingHand.push()
-                    } else {
-                        NSCursor.pop()
-                    }
+                if hovering {
+                    NSCursor.pointingHand.push()
+                } else {
+                    NSCursor.pop()
                 }
             }
 

@@ -20,7 +20,7 @@ class MenuBarController: NSObject, ObservableObject {
 
     private let registry: ServerRegistry
 
-    init(registry: ServerRegistry = .shared) {
+    init(registry: ServerRegistry) {
         self.registry = registry
         super.init()
     }

@@ -38,14 +38,13 @@ struct ServerIconView: View {
     }
 
     private func loadIcon() {
-        guard let url = serverURL else { return }
         // Check if already cached
         if let cached = faviconService.icons[serverId] {
             currentIcon = cached
         } else {
             // Trigger fetch (will update via onChange)
             Task {
-                _ = faviconService.icon(for: url, serverId: serverId)
+                _ = faviconService.icon(for: serverURL, serverId: serverId)
             }
         }
     }
