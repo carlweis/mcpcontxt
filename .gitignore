@@ -21,6 +21,9 @@ xcuserdata/
 # Distribution (keep .gitkeep)
 dist/*.dmg
 
+# Claude plans
+.claude/plans/
+
 # Temporary files
 *.swp
 *.swo
