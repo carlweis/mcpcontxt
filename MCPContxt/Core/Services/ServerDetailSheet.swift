@@ -69,6 +69,8 @@ struct ServerDetailSheet: View {
     
     @State private var isInstalled: Bool = false
     @State private var showingRemoveConfirmation = false
+    @State private var isTesting: Bool = false
+    @State private var testResult: ConnectionTestResult?
     
     init(mode: Mode, onDismiss: (() -> Void)? = nil) {
         self.mode = mode
@@ -554,48 +556,95 @@ struct ServerDetailSheet: View {
     
     private func statusSection(server: MCPServer) -> some View {
         let status = statusChecker.status(for: server.name)
-        
+
         return VStack(alignment: .leading, spacing: 12) {
-            Text("Connection Status")
-                .font(.headline)
-                .foregroundColor(.primary)
-            
+            HStack {
+                Text("Connection Status")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Button {
+                    testServerConnection(server)
+                } label: {
+                    if isTesting {
+                        ProgressView()
+                            .scaleEffect(0.5)
+                            .frame(width: 14, height: 14)
+                    } else {
+                        Label("Test", systemImage: "bolt.horizontal")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(isTesting)
+            }
+
             HStack(spacing: 12) {
                 // Status icon
                 Group {
-                    switch status {
-                    case .connected:
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                    case .needsAuth:
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                    case .failed:
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.red)
-                    case .unknown:
-                        Image(systemName: "questionmark.circle.fill")
-                            .foregroundColor(.gray)
+                    if let result = testResult {
+                        switch result {
+                        case .success:
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        case .authRequired:
+                            Image(systemName: "lock.circle.fill")
+                                .foregroundColor(.orange)
+                        case .unreachable:
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        case .invalidURL:
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        }
+                    } else {
+                        switch status {
+                        case .connected:
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                        case .needsAuth:
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                        case .failed:
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red)
+                        case .unknown:
+                            Image(systemName: "questionmark.circle.fill")
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
                 .font(.title2)
-                
+
                 // Status text
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(statusTitle(for: status))
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Text(statusDescription(for: status))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(3)
+                    if let result = testResult {
+                        Text(testResultTitle(result))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Text(testResultDescription(result))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(3)
+                    } else {
+                        Text(statusTitle(for: status))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+
+                        Text(statusDescription(for: status))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(3)
+                    }
                 }
-                
+
                 Spacer()
             }
             .padding()
-            .background(statusBackgroundColor(for: status))
+            .background(testResult != nil ? testResultBackground(testResult!) : statusBackgroundColor(for: status))
             .cornerRadius(8)
         }
     }
@@ -894,6 +943,60 @@ struct ServerDetailSheet: View {
         case .needsAuth: return Color.orange.opacity(0.1)
         case .failed: return Color.red.opacity(0.1)
         case .unknown: return Color.secondary.opacity(0.05)
+        }
+    }
+
+    // MARK: - Connection Test
+
+    private func testServerConnection(_ server: MCPServer) {
+        isTesting = true
+        testResult = nil
+
+        Task {
+            let result: ConnectionTestResult
+            switch server.type {
+            case .http, .sse:
+                let url = server.configuration.url ?? ""
+                result = await ConnectionTester.test(url: url, headers: server.configuration.headers)
+            case .stdio:
+                let command = server.configuration.command ?? ""
+                result = await ConnectionTester.testCommand(command)
+            }
+
+            await MainActor.run {
+                testResult = result
+                isTesting = false
+            }
+        }
+    }
+
+    private func testResultTitle(_ result: ConnectionTestResult) -> String {
+        switch result {
+        case .success: return "Reachable"
+        case .authRequired: return "Auth Required"
+        case .unreachable: return "Unreachable"
+        case .invalidURL: return "Invalid URL"
+        }
+    }
+
+    private func testResultDescription(_ result: ConnectionTestResult) -> String {
+        switch result {
+        case .success:
+            return "Server responded successfully."
+        case .authRequired:
+            return "Server is reachable but requires authentication."
+        case .unreachable(let reason):
+            return reason
+        case .invalidURL:
+            return "The server URL is not valid."
+        }
+    }
+
+    private func testResultBackground(_ result: ConnectionTestResult) -> Color {
+        switch result {
+        case .success: return Color.green.opacity(0.1)
+        case .authRequired: return Color.orange.opacity(0.1)
+        case .unreachable, .invalidURL: return Color.red.opacity(0.1)
         }
     }
     
