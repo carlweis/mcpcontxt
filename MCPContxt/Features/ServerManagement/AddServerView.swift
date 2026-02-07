@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+enum AuthPreset: String, CaseIterable {
+    case none = "No Auth"
+    case bearerToken = "Bearer Token"
+    case apiKey = "API Key"
+    case basicAuth = "Basic Auth"
+    case custom = "Custom Headers"
+}
+
 struct AddServerView: View {
     @Environment(\.dismiss) private var environmentDismiss
     @EnvironmentObject var registry: ServerRegistry
@@ -17,13 +25,30 @@ struct AddServerView: View {
     @State private var name: String = ""
     @State private var serverType: MCPServerType = .http
     @State private var url: String = ""
-    @State private var headers: [HeaderEntry] = []
+
+    // Auth preset state
+    @State private var authPreset: AuthPreset = .none
+    @State private var bearerToken: String = ""
+    @State private var apiKeyName: String = "X-API-Key"
+    @State private var apiKeyValue: String = ""
+    @State private var basicUsername: String = ""
+    @State private var basicPassword: String = ""
+    @State private var customHeaders: [HeaderEntry] = []
+
     @State private var command: String = ""
     @State private var args: String = ""
     @State private var envVars: [EnvEntry] = []
 
     @State private var isSaving: Bool = false
     @State private var errorMessage: String?
+
+    private let commonApiKeyNames = [
+        "X-API-Key",
+        "Authorization",
+        "X-Auth-Token",
+        "Api-Key",
+        "X-Access-Token",
+    ]
 
     var isEditing: Bool { editingServer != nil }
 
@@ -128,30 +153,80 @@ struct AddServerView: View {
                     .textFieldStyle(.roundedBorder)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Headers")
-                    Spacer()
-                    Button(action: { headers.append(HeaderEntry()) }) {
-                        Image(systemName: "plus.circle")
+            // Auth preset section
+            VStack(alignment: .leading, spacing: 12) {
+                LabeledContent("Authentication") {
+                    Picker("", selection: $authPreset) {
+                        ForEach(AuthPreset.allCases, id: \.self) { preset in
+                            Text(preset.rawValue).tag(preset)
+                        }
                     }
-                    .buttonStyle(.plain)
+                    .labelsHidden()
                 }
 
-                ForEach($headers) { $header in
-                    HStack {
-                        TextField("Key", text: $header.key)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(width: 120)
+                switch authPreset {
+                case .none:
+                    EmptyView()
 
-                        TextField("Value", text: $header.value)
+                case .bearerToken:
+                    LabeledContent("Token") {
+                        SecureField("Enter bearer token", text: $bearerToken)
                             .textFieldStyle(.roundedBorder)
+                    }
 
-                        Button(action: { headers.removeAll { $0.id == header.id } }) {
-                            Image(systemName: "minus.circle")
-                                .foregroundColor(.red)
+                case .apiKey:
+                    LabeledContent("Key Name") {
+                        Picker("", selection: $apiKeyName) {
+                            ForEach(commonApiKeyNames, id: \.self) { name in
+                                Text(name).tag(name)
+                            }
                         }
-                        .buttonStyle(.plain)
+                        .labelsHidden()
+                    }
+
+                    LabeledContent("Key Value") {
+                        SecureField("Enter API key", text: $apiKeyValue)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                case .basicAuth:
+                    LabeledContent("Username") {
+                        TextField("Username", text: $basicUsername)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                    LabeledContent("Password") {
+                        SecureField("Password", text: $basicPassword)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                case .custom:
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Headers")
+                            Spacer()
+                            Button(action: { customHeaders.append(HeaderEntry()) }) {
+                                Image(systemName: "plus.circle")
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        ForEach($customHeaders) { $header in
+                            HStack {
+                                TextField("Key", text: $header.key)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(width: 120)
+
+                                TextField("Value", text: $header.value)
+                                    .textFieldStyle(.roundedBorder)
+
+                                Button(action: { customHeaders.removeAll { $0.id == header.id } }) {
+                                    Image(systemName: "minus.circle")
+                                        .foregroundColor(.red)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                 }
             }
@@ -255,12 +330,51 @@ struct AddServerView: View {
         switch server.type {
         case .http, .sse:
             url = server.configuration.url ?? ""
-            headers = server.configuration.headers?.map { HeaderEntry(key: $0.key, value: $0.value) } ?? []
+            loadAuthPresetFromHeaders(server.configuration.headers)
         case .stdio:
             command = server.configuration.command ?? ""
             args = server.configuration.args?.joined(separator: " ") ?? ""
             envVars = server.configuration.env?.map { EnvEntry(key: $0.key, value: $0.value) } ?? []
         }
+    }
+
+    private func loadAuthPresetFromHeaders(_ headers: [String: String]?) {
+        guard let headers = headers, !headers.isEmpty else {
+            authPreset = .none
+            return
+        }
+
+        // Detect Bearer Token
+        if let authValue = headers["Authorization"], authValue.hasPrefix("Bearer ") {
+            authPreset = .bearerToken
+            bearerToken = String(authValue.dropFirst("Bearer ".count))
+            return
+        }
+
+        // Detect Basic Auth
+        if let authValue = headers["Authorization"], authValue.hasPrefix("Basic ") {
+            authPreset = .basicAuth
+            if let decoded = Data(base64Encoded: String(authValue.dropFirst("Basic ".count))),
+               let decodedString = String(data: decoded, encoding: .utf8) {
+                let parts = decodedString.split(separator: ":", maxSplits: 1)
+                basicUsername = String(parts.first ?? "")
+                basicPassword = String(parts.last ?? "")
+            }
+            return
+        }
+
+        // Detect API Key (single header matching common names)
+        if headers.count == 1, let entry = headers.first,
+           commonApiKeyNames.contains(entry.key) {
+            authPreset = .apiKey
+            apiKeyName = entry.key
+            apiKeyValue = entry.value
+            return
+        }
+
+        // Fall back to custom headers
+        authPreset = .custom
+        customHeaders = headers.map { HeaderEntry(key: $0.key, value: $0.value) }
     }
 
     private func save() {
@@ -284,14 +398,34 @@ struct AddServerView: View {
         }
     }
 
+    private func headersFromPreset() -> [String: String]? {
+        switch authPreset {
+        case .none:
+            return nil
+        case .bearerToken:
+            guard !bearerToken.isEmpty else { return nil }
+            return ["Authorization": "Bearer \(bearerToken)"]
+        case .apiKey:
+            guard !apiKeyName.isEmpty, !apiKeyValue.isEmpty else { return nil }
+            return [apiKeyName: apiKeyValue]
+        case .basicAuth:
+            guard !basicUsername.isEmpty else { return nil }
+            let encoded = Data("\(basicUsername):\(basicPassword)".utf8).base64EncodedString()
+            return ["Authorization": "Basic \(encoded)"]
+        case .custom:
+            let filtered = customHeaders.filter { !$0.key.isEmpty }
+            guard !filtered.isEmpty else { return nil }
+            return Dictionary(uniqueKeysWithValues: filtered.map { ($0.key, $0.value) })
+        }
+    }
+
     private func buildConfig() -> MCPServerConfig {
         switch serverType {
         case .http, .sse:
-            let headersDict = headers.isEmpty ? nil : Dictionary(uniqueKeysWithValues: headers.map { ($0.key, $0.value) })
             return MCPServerConfig(
                 type: serverType == .sse ? "sse" : "http",
                 url: url,
-                headers: headersDict
+                headers: headersFromPreset()
             )
         case .stdio:
             let argsArray = args.isEmpty ? nil : args.components(separatedBy: " ").filter { !$0.isEmpty }
