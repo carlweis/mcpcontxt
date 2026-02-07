@@ -244,7 +244,9 @@ struct AddStdioServerView: View {
             documentationUrl: nil,
             githubUrl: "https://github.com/reminia/zendesk-mcp-server",
             requirements: nil,
-            installCommand: nil
+            installCommand: nil,
+            auth: .apiKey,
+            alternatives: nil
         )
     )
     .environmentObject(ServerRegistry.shared)

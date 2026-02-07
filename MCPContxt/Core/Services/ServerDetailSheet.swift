@@ -49,6 +49,15 @@ struct ServerDetailSheet: View {
             case .catalog(let server): return server.description
             }
         }
+
+        var isOAuth: Bool {
+            switch self {
+            case .installed(let server):
+                return MCPCatalogService.shared.servers.first(where: { $0.id == server.name })?.isOAuth ?? false
+            case .catalog(let server):
+                return server.isOAuth
+            }
+        }
     }
     
     @Environment(\.dismiss) private var dismiss
@@ -124,7 +133,18 @@ struct ServerDetailSheet: View {
                         .background(badgeColor.opacity(0.2))
                         .foregroundColor(badgeColor)
                         .cornerRadius(6)
-                    
+
+                    // OAuth badge
+                    if mode.isOAuth {
+                        Text("OAuth")
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color.secondary.opacity(0.15))
+                            .foregroundColor(.secondary)
+                            .cornerRadius(6)
+                    }
+
                     // Installed badge
                     if isInstalled {
                         Label("Installed", systemImage: "checkmark.circle.fill")
@@ -162,27 +182,45 @@ struct ServerDetailSheet: View {
     private var leftColumn: some View {
         VStack(alignment: .leading, spacing: 16) {
             if case .catalog(let server) = mode {
+                // OAuth warning for catalog servers
+                if server.isOAuth {
+                    catalogAuthSection(server: server)
+                }
+
+                // Alternatives section
+                if let alternatives = server.alternatives, !alternatives.isEmpty {
+                    alternativesSection(alternatives: alternatives)
+                }
+
                 // Installation & Setup section
                 installationSection(server: server)
-                
+
                 // Documentation links - only show if there are actual docs
                 if server.documentationUrl != nil || server.githubUrl != nil ||
                    (server.setupUrl != nil && server.documentationUrl == nil && server.githubUrl == nil) {
                     documentationSection(server: server)
                 }
             } else if case .installed(let server) = mode {
-                // For installed servers, try to get catalog data
+                // For installed servers, check catalog for OAuth info
                 if let catalogServer = MCPCatalogService.shared.servers.first(where: { $0.id == server.name }) {
+                    if catalogServer.isOAuth {
+                        catalogAuthSection(server: catalogServer)
+                    }
+
+                    if let alternatives = catalogServer.alternatives, !alternatives.isEmpty {
+                        alternativesSection(alternatives: alternatives)
+                    }
+
                     if catalogServer.documentationUrl != nil || catalogServer.githubUrl != nil ||
                        (catalogServer.setupUrl != nil && catalogServer.documentationUrl == nil && catalogServer.githubUrl == nil) {
                         documentationSection(server: catalogServer)
                     }
                 }
-                
+
                 // Authentication info
                 authSection
             }
-            
+
             Spacer()
         }
         .padding()
@@ -399,7 +437,7 @@ struct ServerDetailSheet: View {
             Text("Authentication")
                 .font(.headline)
                 .foregroundColor(.primary)
-            
+
             VStack(alignment: .leading, spacing: 8) {
                 if mode.serverType == .http || mode.serverType == .sse {
                     Text("Authentication happens automatically in Claude Code. When you first use this server, Claude Code will open your browser to complete the OAuth flow.")
@@ -414,6 +452,86 @@ struct ServerDetailSheet: View {
             .padding()
             .background(Color.secondary.opacity(0.05))
             .cornerRadius(8)
+        }
+    }
+
+    private func catalogAuthSection(server: MCPCatalogServer) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Authentication", systemImage: "person.badge.key")
+                .font(.subheadline)
+                .fontWeight(.medium)
+
+            Text("This server uses OAuth. Claude Code will open your browser to authenticate when you first connect.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            if let alts = server.alternatives, !alts.isEmpty {
+                Text("A stdio alternative is also available below if you prefer token-based auth.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color.secondary.opacity(0.05))
+        .cornerRadius(8)
+    }
+
+    private func alternativesSection(alternatives: [CatalogAlternative]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Alternatives")
+                .font(.headline)
+                .foregroundColor(.primary)
+
+            ForEach(alternatives) { alt in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: alt.isStdio ? "terminal" : "globe")
+                            .font(.title3)
+                            .foregroundColor(alt.isStdio ? .purple : .blue)
+                            .frame(width: 28, height: 28)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 6) {
+                                Text(alt.name)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+
+                                Text(alt.transport.uppercased())
+                                    .font(.caption2)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 1)
+                                    .background(alt.isStdio ? Color.purple.opacity(0.2) : Color.secondary.opacity(0.2))
+                                    .cornerRadius(3)
+                            }
+
+                            if let notes = alt.notes {
+                                Text(notes)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        if alt.isStdio, let command = alt.command {
+                            let args = alt.args ?? []
+                            let fullCmd = args.isEmpty ? command : "\(command) \(args.joined(separator: " "))"
+                            Button(action: {
+                                copyToClipboard(fullCmd)
+                            }) {
+                                Label("Copy", systemImage: "doc.on.doc")
+                                    .font(.caption2)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.mini)
+                            .help("Copy command: \(fullCmd)")
+                        }
+                    }
+                }
+                .padding(10)
+                .background(Color.secondary.opacity(0.05))
+                .cornerRadius(8)
+            }
         }
     }
     
@@ -876,7 +994,9 @@ struct ServerDetailSheet: View {
         documentationUrl: "https://modelcontextprotocol.io/docs",
         githubUrl: "https://github.com/modelcontextprotocol/servers",
         requirements: ["Node.js 18+", "GitHub Account"],
-        installCommand: "npm install -g @modelcontextprotocol/server-github"
+        installCommand: "npm install -g @modelcontextprotocol/server-github",
+        auth: .oauth,
+        alternatives: [CatalogAlternative(name: "GitHub (stdio)", transport: "stdio", command: "npx", args: ["-y", "@modelcontextprotocol/server-github"], env: ["GITHUB_PERSONAL_ACCESS_TOKEN"], url: nil, setupUrl: nil, notes: "Uses Personal Access Token — works without OAuth")]
     )
     
     return ServerDetailSheet(mode: .catalog(server))

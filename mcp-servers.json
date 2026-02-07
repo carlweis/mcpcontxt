@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "updated_at": "2026-02-01",
   "servers": [
     {
@@ -35,14 +35,16 @@
       "name": "Asana",
       "description": "Connect to Asana to coordinate tasks, projects, and goals",
       "url": "https://mcp.asana.com/v2/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "atlassian",
       "name": "Atlassian",
       "description": "Access Jira & Confluence from Claude",
       "url": "https://mcp.atlassian.com/v1/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "aura",
@@ -161,7 +163,8 @@
       "name": "Cloudflare",
       "description": "Build applications with compute, storage, and AI",
       "url": "https://bindings.mcp.cloudflare.com/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "cms-coverage",
@@ -224,7 +227,8 @@
       "name": "Figma",
       "description": "Generate diagrams and better code from Figma context",
       "url": "https://mcp.figma.com/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "fireflies",
@@ -273,7 +277,8 @@
       "name": "HubSpot",
       "description": "Chat with your CRM data to get personalized insights",
       "url": "https://mcp.hubspot.com/anthropic",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "huggingface",
@@ -301,7 +306,8 @@
       "name": "Intercom",
       "description": "Access to Intercom data for better customer insights",
       "url": "https://mcp.intercom.com/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "jotform",
@@ -343,7 +349,8 @@
       "name": "Linear",
       "description": "Manage issues, projects & team workflows in Linear",
       "url": "https://mcp.linear.app/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "lseg",
@@ -441,7 +448,8 @@
       "name": "Notion",
       "description": "Connect your Notion workspace to search and update",
       "url": "https://mcp.notion.com/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "npi-registry",
@@ -511,7 +519,8 @@
       "name": "Sentry",
       "description": "Monitor errors and debug production issues",
       "url": "https://mcp.sentry.dev/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "similarweb",
@@ -525,7 +534,8 @@
       "name": "Slack",
       "description": "Send messages, create canvases, and fetch Slack data",
       "url": "https://mcp.slack.com/mcp",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "smartsheet",
@@ -539,7 +549,8 @@
       "name": "Stripe",
       "description": "Payment processing and financial infrastructure tools",
       "url": "https://mcp.stripe.com",
-      "transport": "http"
+      "transport": "http",
+      "auth": "oauth"
     },
     {
       "id": "supabase",
@@ -626,6 +637,24 @@
       "transport": "http"
     },
     {
+      "id": "github",
+      "name": "GitHub",
+      "description": "Access repositories, issues, pull requests, and code search",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "transport": "http",
+      "auth": "oauth",
+      "alternatives": [
+        {
+          "name": "GitHub (stdio)",
+          "transport": "stdio",
+          "command": "npx",
+          "args": ["-y", "@modelcontextprotocol/server-github"],
+          "env": ["GITHUB_PERSONAL_ACCESS_TOKEN"],
+          "notes": "Uses Personal Access Token — works without OAuth"
+        }
+      ]
+    },
+    {
       "id": "github-official",
       "name": "GitHub (Official)",
       "description": "Access GitHub repositories, issues, pull requests, and code search",
@@ -633,7 +662,16 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": ["GITHUB_PERSONAL_ACCESS_TOKEN"],
-      "setupUrl": "https://github.com/modelcontextprotocol/servers/tree/main/src/github"
+      "setupUrl": "https://github.com/modelcontextprotocol/servers/tree/main/src/github",
+      "auth": "apiKey",
+      "alternatives": [
+        {
+          "name": "GitHub (HTTP)",
+          "transport": "http",
+          "url": "https://api.githubcopilot.com/mcp/",
+          "notes": "HTTP version with OAuth — no setup required"
+        }
+      ]
     },
     {
       "id": "salesforce",
@@ -653,7 +691,8 @@
       "command": "uvx",
       "args": ["zendesk-mcp-server"],
       "env": ["ZENDESK_SUBDOMAIN", "ZENDESK_EMAIL", "ZENDESK_API_KEY"],
-      "setupUrl": "https://github.com/reminia/zendesk-mcp-server"
+      "setupUrl": "https://github.com/reminia/zendesk-mcp-server",
+      "auth": "apiKey"
     },
     {
       "id": "google-workspace",
@@ -663,7 +702,8 @@
       "command": "uvx",
       "args": ["workspace-mcp"],
       "env": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
-      "setupUrl": "https://github.com/taylorwilsdon/google_workspace_mcp"
+      "setupUrl": "https://github.com/taylorwilsdon/google_workspace_mcp",
+      "auth": "apiKey"
     },
     {
       "id": "postgres",

@@ -12,8 +12,6 @@ struct PopoverView: View {
     @EnvironmentObject var registry: ServerRegistry
     @ObservedObject private var statusChecker = MCPStatusChecker.shared
     
-    @State private var serverToViewDetail: MCPServer?
-
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -35,12 +33,6 @@ struct PopoverView: View {
         }
         .frame(width: 320)
         .background(Color(NSColor.windowBackgroundColor))
-        .sheet(item: $serverToViewDetail) { server in
-            ServerDetailSheet(mode: .installed(server)) {
-                serverToViewDetail = nil
-            }
-            .environmentObject(registry)
-        }
         .onAppear {
             print("[PopoverView] onAppear - loading servers")
             Task {
@@ -101,7 +93,9 @@ struct PopoverView: View {
                 ForEach(registry.servers) { server in
                     ServerRowView(
                         server: server,
-                        onTap: { serverToViewDetail = server }
+                        onTap: {
+                            NotificationCenter.default.post(name: .openServerDetail, object: server)
+                        }
                     )
                 }
             }

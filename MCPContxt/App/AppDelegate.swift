@@ -143,14 +143,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func openServerDetail(_ server: MCPServer) {
-        let detailView = ServerDetailView(server: server, onDismiss: { [weak self] in
+        let detailView = ServerDetailSheet(mode: .installed(server), onDismiss: { [weak self] in
             self?.serverDetailWindow?.close()
         })
         .environmentObject(ServerRegistry.shared)
 
         if serverDetailWindow == nil {
             serverDetailWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 450, height: 500),
+                contentRect: NSRect(x: 0, y: 0, width: 650, height: 550),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false

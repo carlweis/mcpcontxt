@@ -265,6 +265,16 @@ struct BrowseServersView: View {
                             .padding(.vertical, 2)
                             .background(server.isStdio ? Color.purple.opacity(0.2) : Color.secondary.opacity(0.2))
                             .cornerRadius(4)
+
+                        if server.isOAuth {
+                            Text("OAuth")
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.15))
+                                .foregroundColor(.secondary)
+                                .cornerRadius(4)
+                        }
                     }
 
                     Text(server.description)
@@ -295,6 +305,7 @@ struct BrowseServersView: View {
                         }
                         .foregroundColor(.orange)
                     }
+
                 }
             }
             .contentShape(Rectangle())

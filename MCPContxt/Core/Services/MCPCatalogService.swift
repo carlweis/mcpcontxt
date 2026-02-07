@@ -175,6 +175,7 @@ extension MCPCatalogServer: Codable {
     enum CodingKeys: String, CodingKey {
         case id, name, description, url, transport, command, args, env
         case setupUrl, documentationUrl, githubUrl, requirements, installCommand
+        case auth, alternatives
     }
 
     init(from decoder: Decoder) throws {
@@ -192,13 +193,21 @@ extension MCPCatalogServer: Codable {
         command = try container.decodeIfPresent(String.self, forKey: .command)
         args = try container.decodeIfPresent([String].self, forKey: .args)
         env = try container.decodeIfPresent([String].self, forKey: .env)
-        
+
         // Metadata fields
         setupUrl = try container.decodeIfPresent(String.self, forKey: .setupUrl)
         documentationUrl = try container.decodeIfPresent(String.self, forKey: .documentationUrl)
         githubUrl = try container.decodeIfPresent(String.self, forKey: .githubUrl)
         requirements = try container.decodeIfPresent([String].self, forKey: .requirements)
         installCommand = try container.decodeIfPresent(String.self, forKey: .installCommand)
+
+        // Auth and alternatives (resilient decoding — format mismatch yields nil, not crash)
+        if let authString = try container.decodeIfPresent(String.self, forKey: .auth) {
+            self.auth = AuthType(rawValue: authString)
+        } else {
+            self.auth = nil
+        }
+        self.alternatives = (try? container.decodeIfPresent([CatalogAlternative].self, forKey: .alternatives)) ?? nil
     }
 
     func encode(to encoder: Encoder) throws {
@@ -216,6 +225,8 @@ extension MCPCatalogServer: Codable {
         try container.encodeIfPresent(githubUrl, forKey: .githubUrl)
         try container.encodeIfPresent(requirements, forKey: .requirements)
         try container.encodeIfPresent(installCommand, forKey: .installCommand)
+        try container.encodeIfPresent(auth?.rawValue, forKey: .auth)
+        try container.encodeIfPresent(alternatives, forKey: .alternatives)
     }
 }
 
