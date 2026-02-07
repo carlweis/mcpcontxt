@@ -41,8 +41,6 @@ struct AddServerView: View {
 
     @State private var isSaving: Bool = false
     @State private var errorMessage: String?
-    @State private var isTesting: Bool = false
-    @State private var testResult: ConnectionTestResult?
 
     private let commonApiKeyNames = [
         "X-API-Key",
@@ -291,7 +289,6 @@ struct AddServerView: View {
 
     private var footer: some View {
         HStack {
-            // Status messages
             if let error = errorMessage {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -300,26 +297,9 @@ struct AddServerView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-            } else if let result = testResult {
-                testResultView(result)
             }
 
             Spacer()
-
-            // Test button (HTTP/SSE: test URL, stdio: check command)
-            Button {
-                testConnection()
-            } label: {
-                if isTesting {
-                    ProgressView()
-                        .scaleEffect(0.5)
-                        .frame(width: 14, height: 14)
-                } else {
-                    Label("Test", systemImage: "bolt.horizontal")
-                }
-            }
-            .buttonStyle(.bordered)
-            .disabled(isTesting || !isValid)
 
             Button(isEditing ? "Save" : "Add Server") {
                 save()
@@ -328,49 +308,6 @@ struct AddServerView: View {
             .disabled(isSaving || !isValid)
         }
         .padding()
-    }
-
-    @ViewBuilder
-    private func testResultView(_ result: ConnectionTestResult) -> some View {
-        switch result {
-        case .success:
-            Label("Reachable", systemImage: "checkmark.circle.fill")
-                .font(.caption)
-                .foregroundColor(.green)
-        case .authRequired:
-            Label("Reachable (auth required)", systemImage: "lock.circle.fill")
-                .font(.caption)
-                .foregroundColor(.orange)
-        case .unreachable(let reason):
-            Label(reason, systemImage: "xmark.circle.fill")
-                .font(.caption)
-                .foregroundColor(.red)
-        case .invalidURL:
-            Label("Invalid URL", systemImage: "xmark.circle.fill")
-                .font(.caption)
-                .foregroundColor(.red)
-        }
-    }
-
-    private func testConnection() {
-        isTesting = true
-        testResult = nil
-        errorMessage = nil
-
-        Task {
-            let result: ConnectionTestResult
-            switch serverType {
-            case .http, .sse:
-                result = await ConnectionTester.test(url: url, headers: headersFromPreset())
-            case .stdio:
-                result = await ConnectionTester.testCommand(command)
-            }
-
-            await MainActor.run {
-                testResult = result
-                isTesting = false
-            }
-        }
     }
 
     private var isValid: Bool {
