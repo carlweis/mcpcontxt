@@ -230,18 +230,6 @@ struct ServerDetailSheet: View {
                 .fontWeight(.medium)
 
             Spacer()
-
-            if status == .needsAuth {
-                Button {
-                    openInTerminal("claude mcp")
-                } label: {
-                    Label("Authenticate", systemImage: "terminal")
-                        .font(.caption)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .tint(.orange)
-            }
         }
         .padding(10)
         .background(statusBackgroundColor(for: status))
