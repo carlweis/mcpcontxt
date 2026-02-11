@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C31DA9342F3CCF0000BA5A11 /* MCPContxt.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = MCPContxt.xctestplan; sourceTree = "<group>"; };
 		C3FC76CF2F2EB18E000292ED /* MCP Contxt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MCP Contxt.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3FC76DC2F2EB190000292ED /* MCP Contxt.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "MCP Contxt.xctest"; path = MCPContxtTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C3FC76E62F2EB190000292ED /* MCP Contxt.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = "MCP Contxt.xctest"; path = MCPContxtUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +76,7 @@
 		C3FC76C62F2EB18E000292ED = {
 			isa = PBXGroup;
 			children = (
+				C31DA9342F3CCF0000BA5A11 /* MCPContxt.xctestplan */,
 				C3FC76D12F2EB18E000292ED /* MCPContxt */,
 				C3FC76DF2F2EB190000292ED /* MCPContxtTests */,
 				C3FC76E92F2EB190000292ED /* MCPContxtUITests */,
@@ -405,6 +407,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "MCP Contxt";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -413,7 +416,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.opcodezero.MCPContxt;
+				PRODUCT_BUNDLE_IDENTIFIER = com.carlweis.MCPContxt;
 				PRODUCT_MODULE_NAME = MCPContxt;
 				PRODUCT_NAME = "MCP Contxt";
 				REGISTER_APP_GROUPS = YES;
@@ -441,6 +444,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "MCP Contxt";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -449,7 +453,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.opcodezero.MCPContxt;
+				PRODUCT_BUNDLE_IDENTIFIER = com.carlweis.MCPContxt;
 				PRODUCT_MODULE_NAME = MCPContxt;
 				PRODUCT_NAME = "MCP Contxt";
 				REGISTER_APP_GROUPS = YES;

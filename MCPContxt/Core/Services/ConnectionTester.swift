@@ -30,7 +30,10 @@ class ConnectionTester {
 
     /// Test connectivity to an HTTP/SSE MCP server
     static func test(url: String, headers: [String: String]?) async -> ConnectionTestResult {
-        guard let serverURL = URL(string: url) else {
+        guard let serverURL = URL(string: url),
+              let scheme = serverURL.scheme?.lowercased(),
+              (scheme == "http" || scheme == "https"),
+              serverURL.host != nil else {
             return .invalidURL
         }
 
