@@ -108,7 +108,7 @@ class MCPCatalogService: ObservableObject {
 
 // MARK: - Response Models
 
-private struct CatalogResponse: Codable {
+struct CatalogResponse: Codable {
     let version: String
     let updated_at: String
     let servers: [MCPCatalogServer]
@@ -118,7 +118,7 @@ extension MCPCatalogServer: Codable {
     enum CodingKeys: String, CodingKey {
         case id, name, description, url, transport, command, args, env
         case setupUrl, documentationUrl, githubUrl, requirements, installCommand
-        case auth, alternatives
+        case auth, alternatives, official
     }
 
     init(from decoder: Decoder) throws {
@@ -151,6 +151,7 @@ extension MCPCatalogServer: Codable {
             self.auth = nil
         }
         self.alternatives = (try? container.decodeIfPresent([CatalogAlternative].self, forKey: .alternatives)) ?? nil
+        self.official = (try? container.decodeIfPresent(Bool.self, forKey: .official)) ?? false
     }
 
     func encode(to encoder: Encoder) throws {
@@ -170,6 +171,7 @@ extension MCPCatalogServer: Codable {
         try container.encodeIfPresent(installCommand, forKey: .installCommand)
         try container.encodeIfPresent(auth?.rawValue, forKey: .auth)
         try container.encodeIfPresent(alternatives, forKey: .alternatives)
+        try container.encode(official, forKey: .official)
     }
 }
 

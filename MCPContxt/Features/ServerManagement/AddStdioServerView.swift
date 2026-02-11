@@ -246,7 +246,8 @@ struct AddStdioServerView: View {
             requirements: nil,
             installCommand: nil,
             auth: .apiKey,
-            alternatives: nil
+            alternatives: nil,
+            official: false
         )
     )
     .environmentObject(ServerRegistry.shared)

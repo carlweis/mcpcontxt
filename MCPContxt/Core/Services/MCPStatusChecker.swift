@@ -118,7 +118,7 @@ class MCPStatusChecker: ObservableObject {
 
     /// Parse `claude mcp list` output to extract server statuses
     /// Format: "servername: url (type) - ✓ Connected"
-    private func parseOutput(_ output: String) {
+    func parseOutput(_ output: String) {
         var newStatuses: [String: MCPConnectionStatus] = [:]
 
         let lines = output.components(separatedBy: .newlines)
@@ -139,7 +139,7 @@ class MCPStatusChecker: ObservableObject {
         print("[MCPStatusChecker] Parsed \(newStatuses.count) server statuses: \(newStatuses)")
     }
 
-    private func parseStatusLine(_ line: String) -> (name: String, status: MCPConnectionStatus)? {
+    func parseStatusLine(_ line: String) -> (name: String, status: MCPConnectionStatus)? {
         // Format: "servername: url (type) - status"
         // First, get the server name (everything before the first colon)
         guard let colonIndex = line.firstIndex(of: ":") else {

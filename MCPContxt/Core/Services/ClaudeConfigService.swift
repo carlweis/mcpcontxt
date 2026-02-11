@@ -13,6 +13,10 @@ class ClaudeConfigService {
 
     private let configURL: URL
 
+    init(configURL: URL) {
+        self.configURL = configURL
+    }
+
     private init() {
         // Get the REAL home directory, not the sandboxed one
         // FileManager.homeDirectoryForCurrentUser returns sandboxed path

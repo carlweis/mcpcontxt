@@ -150,7 +150,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         if serverDetailWindow == nil {
             serverDetailWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 650, height: 550),
+                contentRect: NSRect(x: 0, y: 0, width: 450, height: 380),
                 styleMask: [.titled, .closable],
                 backing: .buffered,
                 defer: false

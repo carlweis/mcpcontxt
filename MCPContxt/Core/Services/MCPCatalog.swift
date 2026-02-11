@@ -58,6 +58,9 @@ struct MCPCatalogServer: Identifiable, Hashable {
     let auth: AuthType?
     let alternatives: [CatalogAlternative]?
 
+    // Whether this is an official/verified server
+    let official: Bool
+
     enum TransportType: String {
         case http
         case sse

@@ -47,12 +47,12 @@ struct AboutSettingsView: View {
                 }
                 .buttonStyle(.link)
 
-                Button(action: { openURL("https://github.com/opcodezerohq/mcpcontxt") }) {
+                Button(action: { openURL("https://github.com/carlweis/mcpcontxt") }) {
                     Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
                 }
                 .buttonStyle(.link)
 
-                Button(action: { openURL("https://github.com/opcodezerohq/mcpcontxt/issues") }) {
+                Button(action: { openURL("https://github.com/carlweis/mcpcontxt/issues") }) {
                     Label("Report Issue", systemImage: "exclamationmark.bubble")
                 }
                 .buttonStyle(.link)
