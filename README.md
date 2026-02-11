@@ -40,7 +40,7 @@ Changes sync directly to your Claude Code configuration. No restart required.
 ## Installation
 
 ### Download
-1. Download the latest release from [mcpcontxt.com](https://mcpcontxt.com) or the [GitHub Releases](https://github.com/opcodezerohq/mcpcontxt/releases) page
+1. Download the latest release from [mcpcontxt.com](https://mcpcontxt.com) or the [GitHub Releases](https://github.com/carlweis/mcpcontxt/releases) page
 2. Open the DMG file
 3. Drag **MCP Contxt** to your Applications folder
 4. Launch MCP Contxt from Applications
@@ -106,10 +106,20 @@ MCP Contxt manages the Claude Code configuration file located at `~/.claude.json
 ```
 You ─── MCP Contxt ─── ~/.claude.json ─── Claude Code
               │
-              └── Server Catalog (GitHub)
+              └── Server Catalog (mcpcontxt.com)
 ```
 
-The app fetches available servers from a curated catalog and writes your selections to the Claude Code config. Claude Code automatically detects changes to this file.
+The app fetches available servers from a curated catalog hosted at [`mcpcontxt.com/mcp-servers.json`](https://mcpcontxt.com/mcp-servers.json) and writes your selections to the Claude Code config. Claude Code automatically detects changes to this file.
+
+### Server Catalog
+
+The MCP server catalog is maintained separately from this app so it can be updated without distributing a new release. The catalog is fetched at runtime and cached locally for offline use.
+
+- **Source of truth:** [`mcpcontxt-web/public/mcp-servers.json`](https://github.com/carlweis/mcpcontxt-web/blob/main/public/mcp-servers.json)
+- **Served from:** `https://mcpcontxt.com/mcp-servers.json`
+- **Local cache:** `~/Library/Application Support/MCPContxt/catalog-cache.json`
+
+To add or update servers in the catalog, submit a PR to the [mcpcontxt-web](https://github.com/carlweis/mcpcontxt-web) repository.
 
 ---
 
@@ -158,7 +168,7 @@ For developers interested in contributing:
 
 ```bash
 # Clone the repository
-git clone https://github.com/opcodezerohq/mcpcontxt.git
+git clone https://github.com/carlweis/mcpcontxt.git
 cd mcpcontxt
 
 # Open in Xcode
@@ -202,7 +212,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/opcodezerohq/mcpcontxt/issues)
+- **Issues:** [GitHub Issues](https://github.com/carlweis/mcpcontxt/issues)
 - **Website:** [mcpcontxt.com](https://mcpcontxt.com)
 
 ---

@@ -16,7 +16,8 @@ class MCPCatalogService: ObservableObject {
     @Published private(set) var lastError: Error?
     @Published private(set) var lastUpdated: Date?
 
-    // Remote catalog URL - hosted on GitHub
+    // Remote catalog URL - hosted on mcpcontxt.com
+    // Source of truth: https://github.com/carlweis/mcpcontxt-web/blob/main/public/mcp-servers.json
     private let remoteURL = URL(string: "https://mcpcontxt.com/mcp-servers.json")!
 
     private let cacheURL: URL
@@ -29,12 +30,8 @@ class MCPCatalogService: ObservableObject {
         try? fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
         cacheURL = cacheDir.appendingPathComponent("catalog-cache.json")
 
-        // Load cached data immediately, falling back to bundled resource or local dev file
-        if !loadFromCache() {
-            if !loadFromBundle() {
-                loadFromLocalDev()
-            }
-        }
+        // Load cached data immediately (remote fetch happens on first view appear)
+        loadFromCache()
     }
 
     // MARK: - Public API
@@ -75,11 +72,10 @@ class MCPCatalogService: ObservableObject {
 
     // MARK: - Private Methods
 
-    @discardableResult
-    private func loadFromCache() -> Bool {
+    private func loadFromCache() {
         guard fileManager.fileExists(atPath: cacheURL.path) else {
             print("[MCPCatalogService] No cache file found")
-            return false
+            return
         }
 
         do {
@@ -87,62 +83,9 @@ class MCPCatalogService: ObservableObject {
             let catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
             servers = catalog.servers
             print("[MCPCatalogService] Loaded \(servers.count) servers from cache")
-            return true
         } catch {
             print("[MCPCatalogService] Failed to load cache: \(error)")
-            return false
         }
-    }
-
-    @discardableResult
-    private func loadFromBundle() -> Bool {
-        guard let bundleURL = Bundle.main.url(forResource: "mcp-servers", withExtension: "json") else {
-            print("[MCPCatalogService] No bundled catalog found")
-            return false
-        }
-
-        do {
-            let data = try Data(contentsOf: bundleURL)
-            let catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
-            servers = catalog.servers
-            print("[MCPCatalogService] Loaded \(servers.count) servers from bundle")
-            return true
-        } catch {
-            print("[MCPCatalogService] Failed to load bundled catalog: \(error)")
-            return false
-        }
-    }
-
-    /// Development fallback - loads from local project directory
-    private func loadFromLocalDev() {
-        // Try to find the mcp-servers.json in common development locations
-        let possiblePaths = [
-            // Xcode derived data paths go up several levels from the build product
-            Bundle.main.bundlePath + "/../../../../../../../../mcp-servers.json",
-            // Current working directory (for CLI runs)
-            FileManager.default.currentDirectoryPath + "/mcp-servers.json",
-            // Source root via Xcode environment (if set)
-            ProcessInfo.processInfo.environment["SRCROOT"].map { $0 + "/mcp-servers.json" }
-        ].compactMap { $0 }
-
-        for path in possiblePaths {
-            let url = URL(fileURLWithPath: path).standardized
-            if fileManager.fileExists(atPath: url.path) {
-                do {
-                    let data = try Data(contentsOf: url)
-                    let catalog = try JSONDecoder().decode(CatalogResponse.self, from: data)
-                    servers = catalog.servers
-                    // Also save to cache for future use
-                    try? data.write(to: cacheURL)
-                    print("[MCPCatalogService] Loaded \(servers.count) servers from local dev: \(url.path)")
-                    return
-                } catch {
-                    print("[MCPCatalogService] Failed to load from \(url.path): \(error)")
-                }
-            }
-        }
-
-        print("[MCPCatalogService] No local dev catalog found")
     }
 
     private func fetchRemoteCatalog() async throws -> [MCPCatalogServer] {
